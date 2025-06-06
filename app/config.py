@@ -12,9 +12,10 @@ class Config:
     # Configuration pour service SMS, par exemple Twilio
     SMS_API_KEY = os.getenv('SMS_API_KEY')
     SMS_API_SECRET = os.getenv('SMS_API_SECRET')
-    MAIL_SERVER = 'smtp.gmail.com'
+    MAIL_SERVER = 'smtp-relay.brevo.com'
     MAIL_PORT = 587
     MAIL_USE_TLS = True
-    MAIL_USERNAME = 'reboisconnect@gmail.com'
-    MAIL_PASSWORD = 'tltogcpddwffcvjaa'
-    SECRET_KEY = 'une_clef_secrete_pour_la_session'
+    MAIL_DEFAULT_SENDER = 'reboisconnect@gmail.com'
+    MAIL_USERNAME = '8efba4001@smtp-brevo.com'
+    MAIL_PASSWORD = os.getenv('BREVO_SMTP_KEY')
+    SECRET_KEY = 'Master Password'

@@ -5,7 +5,7 @@ from email.mime.text import MIMEText
 def send_email(to_email, subject, body):
     msg = MIMEText(body)
     msg['Subject'] = subject
-    msg['From'] = current_app.config['MAIL_SENDER']
+    msg['From'] = current_app.config['MAIL_DEFAULT_SENDER']
     msg['To'] = to_email
 
     with smtplib.SMTP(current_app.config['MAIL_SERVER'], current_app.config['MAIL_PORT']) as server:
@@ -21,7 +21,7 @@ Merci pour votre inscription sur Rebois Connect !
 
 Veuillez cliquer sur le lien ci-dessous pour activer votre compte (valide 1h) :
 
-{activation_link}
+<a href="{{activation_link}}">Activer mon compte</a>
 
 Si vous n'avez pas demandé cela, ignorez cet email.
 

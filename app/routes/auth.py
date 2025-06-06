@@ -36,13 +36,6 @@ def require_superuser():
     if not user or user.role != 'superuser':
         api.abort(403, "Accès réservé au super utilisateur")
 
-@api.route('/admin-only')
-class AdminOnlyResource(Resource):
-    @jwt_required()
-    def get(self):
-        require_superuser()
-        return {"message": "Bienvenue super utilisateur"}, 200
-
 
 @api.route('/register')
 class Register(Resource):
@@ -58,12 +51,11 @@ class Register(Resource):
 
             # Créer un nouvel utilisateur sans 2FA
             new_user = UserFacade.create_user(data)
-            print(type(new_user))
             token = generate_activation_token(new_user['email'])
-            activation_link = url_for('auth_activateuser', token=token, _external=True)
-            send_activation_email(new_user.email, activation_link)
+            activation_link = url_for('auth_activate_user', token=token, _external=True)
+            send_activation_email(new_user['email'], activation_link)
 
-            return {'message': 'User registered successfully', 'user_id': new_user.id}, 201
+            return {'message': 'User registered successfully', 'user_id': new_user['id']}, 201
 
         except ValidationError as err:
             return {'errors': err.messages}, 400
@@ -82,6 +74,9 @@ class Login(Resource):
             user = UserFacade.get_user_by_email(validated_data['email'])
             if not user or not user.check_password(validated_data['password']):
                 return {'message': 'Invalid email or password'}, 401
+
+            if not user.is_active:
+                return {"message": "Account not activated. Please check your email."}, 403
 
             code = generate_2fa_code(user.email)
             send_2fa_code_email(user.email, code)
@@ -117,3 +112,30 @@ class Login2FA(Resource):
         except Exception as e:
             return {'message': str(e)}, 400
 
+@api.route('/activate/<string:token>')
+class ActivateUser(Resource):
+    def get(self, token):
+        """
+        Activation du compte utilisateur via token
+        """
+        try:
+            # Supposons que tu as une fonction pour valider et décoder le token
+            email = verify_activation_token(token)
+            if not email:
+                return {'message': 'Invalid or expired activation token'}, 400
+
+            # Récupérer l'utilisateur par email
+            user = UserFacade.get_user_by_email(email)
+            if not user:
+                return {'message': 'User not found'}, 404
+
+            # Activer le compte utilisateur (à adapter selon ton modèle)
+            if user.is_active:
+                return {'message': 'User already activated'}, 200
+
+            UserFacade.activate_user(user)
+
+            return {'message': 'User activated successfully'}, 200
+
+        except Exception as e:
+            return {'message': str(e)}, 500
