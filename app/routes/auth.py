@@ -112,7 +112,7 @@ class Login2FA(Resource):
         except Exception as e:
             return {'message': str(e)}, 400
 
-@api.route('/activate/<string:token>')
+@api.route('/activate/<string:token>', methods=['GET'], endpoint='auth_activate_user')
 class ActivateUser(Resource):
     def get(self, token):
         """
@@ -130,7 +130,7 @@ class ActivateUser(Resource):
                 return {'message': 'User not found'}, 404
 
             # Activer le compte utilisateur (à adapter selon ton modèle)
-            if user.is_active:
+            if user.get('is_active'):
                 return {'message': 'User already activated'}, 200
 
             UserFacade.activate_user(user)

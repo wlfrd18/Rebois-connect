@@ -21,7 +21,7 @@ Merci pour votre inscription sur Rebois Connect !
 
 Veuillez cliquer sur le lien ci-dessous pour activer votre compte (valide 1h) :
 
-<a href="{{activation_link}}">Activer mon compte</a>
+<a href="{activation_link}">Activer mon compte</a>
 
 Si vous n'avez pas demandé cela, ignorez cet email.
 

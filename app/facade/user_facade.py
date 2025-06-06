@@ -40,10 +40,9 @@ class UserFacades:
     def delete_user(self, user_id):
         return self.user_repo.delete(user_id)
 
-    def activate_user(self, email):
-        user = self.get_user_by_email(email)
+    def activate_user(self, user):
         if user:
-            user.is_active = True
+            user['is_active'] = True
             db.session.commit()
             return self.user_schema.dump(user)
         return None
