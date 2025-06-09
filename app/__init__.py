@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_restx import Api
 
-from app.extensions import db, jwt, bcrypt, migrate
+from app.extensions import db, jwt, bcrypt, migrate, mail
 from app.config import Config
 
 # Import des namespaces
@@ -21,6 +21,7 @@ def create_app(config_class=Config):
     jwt.init_app(app)
     db.init_app(app)
     migrate.init_app(app, db)
+    mail.init_app(app)
 
     # Swagger API instance
     api = Api(

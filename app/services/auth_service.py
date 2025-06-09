@@ -7,6 +7,7 @@ from flask_mail import Message
 from flask import current_app
 from app.extensions import mail
 from datetime import datetime, timedelta
+from .mail_service import send_email
 
 # Stockage temporaire simple (à remplacer en prod)
 _2fa_codes = {}
@@ -30,10 +31,6 @@ def verify_2fa_code(email: str, code: str) -> bool:
     return False
 
 def send_2fa_code_email(email: str, code: str) -> None:
-    msg = Message(
-        subject="Votre code de vérification 2FA",
-        sender=current_app.config['MAIL_USERNAME'],
-        recipients=[email],
-        body=f"Votre code de vérification est : {code}. Il expire dans 5 minutes."
-    )
-    mail.send(msg)
+    subject="Votre code de vérification 2FA"
+    body=f"Votre code de vérification est : {code}. Il expire dans 5 minutes."
+    send_email(email, subject, body)

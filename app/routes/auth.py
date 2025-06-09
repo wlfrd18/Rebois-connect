@@ -71,7 +71,7 @@ class Login(Resource):
             data = request.get_json()
             validated_data = UserLoginSchema().load(data)
 
-            user = UserFacade.get_user_by_email(validated_data['email'])
+            user = UserFacade.get_a_user_by_email(validated_data['email'])
             if not user or not user.check_password(validated_data['password']):
                 return {'message': 'Invalid email or password'}, 401
 
@@ -133,7 +133,9 @@ class ActivateUser(Resource):
             if user.get('is_active'):
                 return {'message': 'User already activated'}, 200
 
-            UserFacade.activate_user(user)
+            updated_user = UserFacade.activate_user(email)
+            if not updated_user:
+                return {'message': 'User not found'}, 404
 
             return {'message': 'User activated successfully'}, 200
 

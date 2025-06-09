@@ -21,6 +21,11 @@ class UserFacades:
     def get_user_by_email(self, email):
         user = self.user_repo.get_by_email(email)
         return self.user_schema.dump(user) if user else None
+    
+    def get_a_user_by_email(self, email):
+        user = self.user_repo.get_by_email(email)
+        return user  # Pas de dump ici, on veut l'objet User, pas un dict
+
 
     def create_user(self, data):
         user = User(**data)
@@ -40,9 +45,10 @@ class UserFacades:
     def delete_user(self, user_id):
         return self.user_repo.delete(user_id)
 
-    def activate_user(self, user):
-        if user:
-            user['is_active'] = True
-            db.session.commit()
-            return self.user_schema.dump(user)
-        return None
+    def activate_user(self, user_email):
+        user_obj = self.user_repo.get_by_email(user_email)  # ici on récupères l'objet ORM
+        if not user_obj:
+            return None
+        user_obj.is_active = True
+        db.session.commit()
+        return self.user_schema.dump(user_obj)
