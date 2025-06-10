@@ -1,0 +1,14 @@
+flask
+flask_sqlalchemy
+flask_bcrypt
+flask_jwt_extended
+flask_restx
+flask_migrate
+Flask-Migrate
+alembic
+pyotp
+python-dotenv
+psycopg2-binary
+marshmallow
+phonenumbers
+flask_mail

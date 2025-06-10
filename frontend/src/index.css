@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Couleurs personnalisées en accord avec ta charte */
+.text-black {
+  color: #000000; /* texte en noir */
+}
+
+/* Classes custom pour les couleurs de la charte */
+.text-greenvegetal {
+  color: #2e7d32; /* vert végétal (ancien bleu Facebook) */
+}
+
+.text-blueeau {
+  color: #4fc3f7; /* bleu eau et ciel (ancien vert Facebook) */
+}
+
+.bg-greenvegetal {
+  background-color: #2e7d32;
+}
+
+.bg-blueeau {
+  background-color: #4fc3f7;
+}
