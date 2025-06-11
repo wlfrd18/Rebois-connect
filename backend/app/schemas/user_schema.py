@@ -17,7 +17,7 @@ class UserLoginSchema(Schema):
 
 
 class User2FASchema(Schema):
-    token = fields.String(required=True, metadata={"description" : "Code de vérification 2FA (TOTP ou reçu par SMS)"} )
+    email = fields.Email(required=True, metadata={"description" : "Code de vérification 2FA (TOTP ou reçu par SMS)"} )
     code = fields.String(required=True, metadata={"description": "Code de vérification 2FA (TOTP ou reçu par email)"})
 
 class UserSchema(Schema):  # Pour la réponse d’un utilisateur

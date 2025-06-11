@@ -20,6 +20,8 @@ def create_app(config_class=Config):
     bcrypt.init_app(app)
     jwt.init_app(app)
     db.init_app(app)
+    # Import forcé des modèles pour que Flask-Migrate les détecte
+    from app.models.twofacode import TwoFaCode
     migrate.init_app(app, db)
     mail.init_app(app)
 

@@ -28,7 +28,7 @@ const Login2FA = () => {
     }
 
     try {
-      const response = await fetch('/api/v1/auth/login/2fa', {
+      const response = await fetch('/auth/login/2fa', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, code }),

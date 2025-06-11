@@ -97,7 +97,7 @@ class Login2FA(Resource):
             data = request.get_json()
             validated_data = User2FASchema().load(data)
 
-            user = UserFacade.get_user_by_email(validated_data['email'])
+            user = UserFacade.get_a_user_by_email(validated_data['email'])
             if not user:
                 return {'message': 'User not found'}, 404
 
