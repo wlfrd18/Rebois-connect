@@ -51,7 +51,7 @@ export default function Register() {
     localStorage.setItem('user', JSON.stringify(newUser));
     localStorage.setItem('token', 'fake-token');
 
-    navigate('/dashboard');
+    navigate('/login');
   };
 
   return (
