@@ -12,6 +12,10 @@ class ProjectSchema(Schema):
     end_date = fields.Date(allow_none=True)
     report = fields.Str(allow_none=True)
     status = fields.Str(load_default='proposed')
+    photo_url = fields.Str()
+
+    # Champ pour afficher le pays (injecté dans la facade)
+    land_country = fields.Str(dump_only=True)
 
     @validates('status')
     def validate_status(self, value):

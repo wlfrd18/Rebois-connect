@@ -8,6 +8,8 @@ from app.config import Config
 from app.routes.auth import api as auth_ns
 from app.routes.lands import api as lands_ns
 from app.routes.projects import api as projects_ns
+from app.routes.users import api as users_ns
+from app.routes.admins import api as admins_ns
 from flask_cors import CORS
 
 # Tu ajouteras plus tard : from app.routes.lands import api as lands_ns, etc.
@@ -39,7 +41,9 @@ def create_app(config_class=Config):
     api.add_namespace(auth_ns, path='/api/v1/auth')
     api.add_namespace(lands_ns, path='/api/v1/lands')
     api.add_namespace(projects_ns, path='/api/v1/projects')
-    # Tu ajouteras ensuite :
+    api.add_namespace(users_ns, path='/api/v1/users')
+    api.add_namespace(admins_ns, path='/api/v1/admins')
+    # on ajoutera ensuite :
     # api.add_namespace(messages_ns, path='/api/v1/messages')
 
     return app

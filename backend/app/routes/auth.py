@@ -141,3 +141,19 @@ class ActivateUser(Resource):
 
         except Exception as e:
             return {'message': str(e)}, 500
+
+@api.route('/me')
+class Me(Resource):
+    @jwt_required()
+    def get(self):
+        user_id = get_jwt_identity()
+        user = UserFacade.get_a_user_by_id(user_id)
+        if not user:
+            return {'message': 'User not found'}, 404
+        return {
+            'id': user.id,
+            'email': user.email,
+            'is_active': user.is_active,
+            'role': user.role
+        }, 200
+

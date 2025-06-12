@@ -17,6 +17,10 @@ class UserFacades:
     def get_user_by_id(self, user_id):
         user = self.user_repo.get_by_id(user_id)
         return self.user_schema.dump(user) if user else None
+    
+    def get_a_user_by_id(self, user_id):
+        user = self.user_repo.get_by_id(user_id)
+        return user
 
     def get_user_by_email(self, email):
         user = self.user_repo.get_by_email(email)
@@ -35,7 +39,6 @@ class UserFacades:
 
     def create_superuser(self, **kwargs):
         kwargs['role'] = 'superuser'
-        # Assure-toi de fournir tous les champs nécessaires ici
         return self.create_user(**kwargs)
 
     def update_user(self, user_id, data):

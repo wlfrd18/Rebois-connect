@@ -26,12 +26,25 @@ class LandList(Resource):
     def get(self):
         """Get all lands or filter by criteria"""
         name = request.args.get('name')
-        location = request.args.get('location')
         area = request.args.get('area', type=float)
         owner_id = request.args.get('owner_id')
+        vegetation_type = request.args.get('vegetation_type')
+        area_min = request.args.get('area_min')
+        area_max = request.args.get('area_max')
+        created_after = request.args.get('created_after')
+        created_before = request.args.get('created_before')
+        country = request.args.get('country')
 
-        if any([name, location, area, owner_id]):
-            return land_facade.filter_lands(name=name, location=location, area=area, owner_id=owner_id)
+        if any([name, area, owner_id, vegetation_type, area_min, area_max, created_after, created_before, country]):
+            return land_facade.filter_lands(name=name,
+                                            area=area,
+                                            owner_id=owner_id,
+                                            vegetation_type=vegetation_type,
+                                            area_min=area_min,
+                                            area_max=area_max, 
+                                            created_after=created_after, 
+                                            created_before=created_before, 
+                                            country=country)
         return land_facade.get_all_lands()
 
     @api.doc('create_land')

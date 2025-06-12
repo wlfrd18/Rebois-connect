@@ -12,3 +12,4 @@ psycopg2-binary
 marshmallow
 phonenumbers
 flask_mail
+flask_cors

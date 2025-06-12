@@ -21,6 +21,7 @@ class User(db.Model):
     otp_secret: Optional[str] = db.Column(db.String(32), nullable=True)
     created_at: datetime = db.Column(db.DateTime, default=datetime.utcnow)
     is_active = db.Column(db.Boolean, default=False)
+    photo_url: Optional[str] = db.Column(db.String, nullable=True)
 
     def __init__(self,
                  first_name: str,
@@ -30,7 +31,8 @@ class User(db.Model):
                  role: Literal['volunteer', 'sponsor', 'technical_structure', 'superuser'],
                  password: str,
                  otp_secret: Optional[str] = None,
-                 is_active : bool = False) -> None:
+                 is_active: bool = False,
+                 photo_url: Optional[str] = None) -> None:
         self.first_name = first_name
         self.last_name = last_name
         self.email = email
@@ -38,6 +40,7 @@ class User(db.Model):
         self.role = role
         self.otp_secret = otp_secret
         self.is_active = is_active
+        self.photo_url = photo_url
 
         self.validate()
         self.validate_password(password)
