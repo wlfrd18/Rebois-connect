@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import axios from 'axios';
 
 const Activation = () => {
   const { token } = useParams();
@@ -7,16 +8,22 @@ const Activation = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // TODO: appeler API activation avec le token
-    // fetch(`http://localhost:5000/api/activate/${token}`)
-    //   .then(res => res.json())
-    //   .then(data => setMessage(data.message))
-    //   .catch(() => setError('Erreur lors de l’activation'));
-    // Simulation :
-    setTimeout(() => {
-      if (token) setMessage('Compte activé avec succès !');
-      else setError('Token invalide.');
-    }, 1500);
+    if (!token) {
+      setError('Token invalide.');
+      setMessage(null);
+      return;
+    }
+
+    axios
+      .get(`/auth/activate/${token}`)
+      .then(res => {
+        setMessage(res.data.message);
+        setError(null);
+      })
+      .catch(() => {
+        setError("Erreur lors de l’activation");
+        setMessage(null);
+      });
   }, [token]);
 
   return (

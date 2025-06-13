@@ -3,12 +3,16 @@ from flask import request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from marshmallow import ValidationError
 from app.schemas.user_schema import UserSchema
-from app.facade import user_facade
+from app.schemas.project_schema import ProjectSchema
+from app.schemas.land_schema import LandSchema
+from app.facade import user_facade, land_facade, project_facade
 from .auth import require_superuser
 
 api = Namespace('users', description='Opérations sur les utilisateurs')
 
 user_schema = UserSchema()
+project_schema = ProjectSchema()
+land_schema = LandSchema()
 
 user_model = api.model('User', {
     'id': fields.String(readonly=True),
@@ -83,3 +87,22 @@ class UserResource(Resource):
         if success:
             return {'message': 'Utilisateur supprimé'}, 200
         api.abort(404, "Utilisateur non trouvé")
+
+@api.route('/<string:user_id>/lands')
+class UserLands(Resource):
+    @api.doc('get_user_lands')
+    @jwt_required()
+    def get(self, user_id):
+        """Récupérer toutes les terres postées par un utilisateur"""
+        lands = land_facade.get_lands_by_user_id(user_id)
+        return land_schema.dump(lands, many=True)
+
+
+@api.route('/<string:user_id>/projects')
+class UserProjects(Resource):
+    @api.doc('get_user_projects')
+    @jwt_required()
+    def get(self, user_id):
+        """Récupérer tous les projets liés à un utilisateur (volontaire/sponsor/tech)"""
+        projects = project_facade.get_projects_by_user_id(user_id)
+        return project_schema.dump(projects, many=True)

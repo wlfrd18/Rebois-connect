@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import axios from 'axios';
@@ -6,13 +6,14 @@ import { useNavigate } from 'react-router-dom';
 
 const Register = () => {
   const navigate = useNavigate();
+  const [success, setSuccess] = useState(false);
 
   const validationSchema = Yup.object({
     firstName: Yup.string().required('Le prénom est requis'),
     lastName: Yup.string().required('Le nom est requis'),
     email: Yup.string().email('Email invalide').required('Email requis'),
     phone: Yup.string().required('Numéro de téléphone requis'),
-    password: Yup.string().min(6, 'Minimum 6 caractères').required('Mot de passe requis'),
+    password: Yup.string().min(8, 'Minimum 8 caractères').required('Mot de passe requis'),
     confirmPassword: Yup.string()
       .oneOf([Yup.ref('password'), null], 'Les mots de passe ne correspondent pas')
       .required('Confirmez le mot de passe'),
@@ -31,9 +32,13 @@ const Register = () => {
         password: values.password,
         role: values.role,
       };
-      // TODO: remplacer URL par API réelle
-      await axios.post('http://localhost:5000/api/v1/auth/register', payload);
-      navigate('/check-email');
+
+      await axios.post('/auth/register', payload);
+      setSuccess(true);
+
+      setTimeout(() => {
+        navigate('/');
+      }, 3000);
     } catch (error) {
       if (error.response?.data?.errors) {
         setErrors(error.response.data.errors);
@@ -44,6 +49,19 @@ const Register = () => {
       setSubmitting(false);
     }
   };
+
+  if (success) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-green-50">
+        <div className="bg-white p-8 rounded shadow-md w-full max-w-md text-center">
+          <h2 className="text-2xl font-bold text-greenvegetal mb-4">Inscription réussie !</h2>
+          <p className="text-gray-700">
+            Un lien d’activation vous a été envoyé par email. Vous allez être redirigé vers l’accueil...
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-green-50">
@@ -125,3 +143,4 @@ const Register = () => {
 };
 
 export default Register;
+

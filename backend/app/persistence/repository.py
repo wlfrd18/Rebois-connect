@@ -66,3 +66,4 @@ class SQLAlchemyRepository(Repository[T]):
             if value is not None:
                 query = query.filter(getattr(self.model, key) == value)
         return query.all()
+    

@@ -4,6 +4,10 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from marshmallow import ValidationError
 from app.facade import land_facade
 from app.schemas.land_schema import LandSchema
+from app.models.project import Project
+from app.models.user import User
+from app.extensions import db
+from datetime import datetime
 
 api = Namespace('lands', description='Operations on lands')
 
@@ -15,6 +19,73 @@ land_model = api.model('Land', {
     'area': fields.Float(required=True, description='Land area in hectares'),
     'owner_id': fields.String(readonly=True, description='Owner ID')
 })
+
+lands_model  = api.model('Land', {
+    'id': fields.String,
+    'country': fields.String,
+    'area': fields.Float,
+    'vegetation_type': fields.String,
+    'status': fields.String,
+    'created_at': fields.DateTime,
+    'owner_id': fields.String,
+    'photo_url': fields.String
+})
+
+project_model = api.model('Project', {
+    'id': fields.String,
+    'land_id': fields.String,
+    'sponsor_id': fields.String,
+    'volunteer_id': fields.String,
+    'tech_structure_id': fields.String,
+    'start_date': fields.Date,
+    'end_date': fields.Date,
+    'status': fields.String,
+    'photo_url': fields.String
+})
+
+@api.route('/')
+class LandList(Resource):
+    @jwt_required()
+    @api.marshal_list_with(lands_model)
+    def get(self):
+        # Renvoie les terres sans projet ou avec projets "proposed" (pas encore sponsorisés)
+        lands = Land.query.outerjoin(Project).filter(
+            (Project.id == None) | (Project.status == 'proposed')
+        ).all()
+        return lands
+
+
+@api.route('/<string:land_id>/sponsor')
+class LandSponsor(Resource):
+    @jwt_required()
+    def post(self, land_id):
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        if not user or user.role != 'sponsor':
+            return {"message": "Non autorisé"}, 403
+        
+        land = land_facade.get_a_land_by_id(land_id)
+        if not land:
+            return {"message": "Terre non trouvée"}, 404
+        
+        # Vérifier si projet déjà existant pour cette terre
+        existing_project = Project.query.filter_by(land_id=land_id).first()
+        if existing_project and existing_project.status != 'proposed':
+            return {"message": "Projet déjà sponsorisé"}, 400
+
+        # Créer un projet à partir de la terre
+        new_project = Project(
+            land_id=land.id,
+            sponsor_id=user.id,
+            volunteer_id=user.id,  # Pour l'exemple, tu devras récupérer ça dynamiquement
+            status='in_progress',
+            start_date=datetime.today(),
+            photo_url=land.photo_url
+        )
+        db.session.add(new_project)
+        db.session.commit()
+
+        return {"message": "Projet sponsorisé avec succès", "project_id": str(new_project.id)}, 201
 
 land_schema = LandSchema()
 land_list_schema = LandSchema(many=True)

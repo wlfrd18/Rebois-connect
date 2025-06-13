@@ -41,7 +41,11 @@ const Login2FA = () => {
         sessionStorage.removeItem('temp_email'); // Nettoyer le stockage temporaire
         alert('Connexion réussie !');
         // Rediriger vers la page protégée (exemple : dashboard)
-        navigate('/dashboard');
+
+        // Ajout d'un petit délai pour garantir que le token est pris en compte
+        setTimeout(() => {
+          navigate('/dashboard');
+        }, 100);
       } else {
         setError(data.message || 'Code invalide.');
       }

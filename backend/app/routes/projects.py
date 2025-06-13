@@ -5,6 +5,9 @@ from marshmallow import ValidationError
 from app.facade import project_facade, user_facade
 from app.schemas.project_schema import ProjectSchema
 from .auth import require_superuser
+from app.extensions import db
+
+project_schema = ProjectSchema()
 
 api = Namespace('projects', description='Operations related to projects')
 
@@ -20,13 +23,47 @@ project_model = api.model('Project', {
     'report': fields.String(description='Project report'),
 })
 
+# Résumé court des utilisateurs
+user_short_model = api.model('UserShort', {
+    'id': fields.String,
+    'first_name': fields.String,
+    'last_name': fields.String,
+})
+
+# Résumé court des terres
+land_short_model = api.model('LandShort', {
+    'id': fields.String,
+    'country': fields.String,
+    'status': fields.String,
+    'area': fields.Float,
+    'photo_url': fields.String,
+})
+
+# Nouveau modèle enrichi de projet
+project_detailed_model = api.model('ProjectDetailed', {
+    'id': fields.String,
+    'status': fields.String,
+    'start_date': fields.Date,
+    'end_date': fields.Date,
+    'report': fields.String,
+    'photo_url': fields.String,
+
+    'land': fields.Nested(land_short_model),
+    'sponsor': fields.Nested(user_short_model),
+    'volunteer': fields.Nested(user_short_model),
+    'tech_structure': fields.Nested(user_short_model, allow_null=True),
+})
+
+# === ROUTES ===
+
 @api.route('/')
 class ProjectList(Resource):
-    @api.doc('list_projects')
-    @api.marshal_list_with(project_model)
+    @api.doc('list_projects_detailed')
+    @api.marshal_list_with(project_detailed_model)
     @jwt_required()
     def get(self):
-        return project_facade.get_all_projects()
+        return project_facade.get_all_projects_detailed()
+
 
     @api.doc('create_project')
     @api.expect(project_model)
@@ -84,3 +121,12 @@ class Project(Resource):
         if success:
             return {'message': 'Project deleted'}, 200
         api.abort(404, "Project not found")
+
+
+@api.route('/only')
+class ProjectList(Resource):
+    @api.doc('list_projects')
+    @api.marshal_list_with(project_model)
+    @jwt_required()
+    def get(self):
+        return project_facade.get_all_projects()

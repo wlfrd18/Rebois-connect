@@ -15,9 +15,10 @@ class Land(db.Model):
     longitude: float = db.Column(db.Float, nullable=False)
     weather_data: Optional[Dict[str, Any]] = db.Column(db.JSON, nullable=True)
     status: str = db.Column(db.String(30), default='proposed')
+    photo_url = db.Column(db.String(255), nullable=True)
     created_at: datetime = db.Column(db.DateTime, default=datetime.utcnow)
+    country = db.Column(db.String(100))
 
-    owner = db.relationship('User', backref='lands')
 
     def __init__(self,
                  owner_id: int,
@@ -27,7 +28,9 @@ class Land(db.Model):
                  latitude: float,
                  longitude: float,
                  weather_data: Optional[Dict[str, Any]] = None,
-                 status: str = 'proposed') -> None:
+                 status: str = 'proposed',
+                 photo_url: Optional[str] = None,
+                 country: Optional[str] = None ) -> None:
         self.owner_id = owner_id
         self.area = area
         self.vegetation_type = vegetation_type
@@ -36,8 +39,10 @@ class Land(db.Model):
         self.longitude = longitude
         self.weather_data = weather_data
         self.status = status
+        self.photo_url = photo_url
         self.created_at = datetime.utcnow()
-
+        self.country = country
+        
         self.validate()
 
     def validate(self) -> None:
