@@ -3,7 +3,7 @@ from datetime import date
 
 
 class ProjectSchema(Schema):
-    id = fields.UUID(dump_only=True)
+    id = fields.Str(dump_only=True)
     land_id = fields.Int(required=True)
     sponsor_id = fields.Int(required=True)
     volunteer_id = fields.Int(required=True)

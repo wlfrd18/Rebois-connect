@@ -43,17 +43,6 @@ project_model = api.model('Project', {
     'photo_url': fields.String
 })
 
-@api.route('/')
-class LandList(Resource):
-    @jwt_required()
-    @api.marshal_list_with(lands_model)
-    def get(self):
-        # Renvoie les terres sans projet ou avec projets "proposed" (pas encore sponsorisés)
-        lands = Land.query.outerjoin(Project).filter(
-            (Project.id == None) | (Project.status == 'proposed')
-        ).all()
-        return lands
-
 
 @api.route('/<string:land_id>/sponsor')
 class LandSponsor(Resource):

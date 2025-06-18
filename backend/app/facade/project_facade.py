@@ -60,8 +60,8 @@ class ProjectFacades:
         projects = self.project_repo.filter_by_criteria(**filters)
         return self.project_list_schema.dump(projects)
 
-    def get_projects_by_user_id(user_id):
-        
+    def get_projects_by_user_id(self, user_id):
+
         return Project.query.filter(
             (Project.volunteer_id == user_id) |
             (Project.sponsor_id == user_id) |

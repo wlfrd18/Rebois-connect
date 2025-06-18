@@ -11,11 +11,15 @@ from app.routes.lands import api as lands_ns
 from app.routes.projects import api as projects_ns
 from app.routes.users import api as users_ns
 from app.routes.admins import api as admins_ns
+from app.routes.news_routes import api as news_ns
+from app.routes.upload import api as upload_ns
 
 def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
     app.debug = True
+    app.static_folder = 'static'
+
 
     # CORS avec credentials supporté
     CORS(app, supports_credentials=True, origins=[
@@ -63,6 +67,11 @@ def create_app(config_class=Config):
     api.add_namespace(projects_ns, path='/api/v1/projects')
     api.add_namespace(users_ns, path='/api/v1/users')
     api.add_namespace(admins_ns, path='/api/v1/admins')
+    api.add_namespace(news_ns, path='/api/v1/news')
+    api.add_namespace(upload_ns, path='/api/v1/upload')
+
+
+
 
     return app
 

@@ -3,13 +3,15 @@ from flask import request, session, url_for
 from app.facade import UserFacade
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
 from datetime import timedelta
-from app.schemas.user_schema import UserRegisterSchema, UserLoginSchema, User2FASchema
+from app.schemas.user_schema import UserRegisterSchema, UserLoginSchema, User2FASchema, UserSchema
 from marshmallow import ValidationError
 from app.services.auth_service import generate_2fa_code, send_2fa_code_email, verify_2fa_code
 from app.services.token_service import generate_activation_token, verify_activation_token
 from app.services.mail_service import send_activation_email
 
 api = Namespace('auth', description='Operations related to authentication')
+
+user_schema = UserSchema()
 
 user_register_model = api.model('UserRegister', {
     'first_name': fields.String(required=True),
@@ -150,10 +152,6 @@ class Me(Resource):
         user = UserFacade.get_a_user_by_id(user_id)
         if not user:
             return {'message': 'User not found'}, 404
-        return {
-            'id': user.id,
-            'email': user.email,
-            'is_active': user.is_active,
-            'role': user.role
-        }, 200
+        return user_schema.dump(user), 200
+
 

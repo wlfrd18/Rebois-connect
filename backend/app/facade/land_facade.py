@@ -22,7 +22,6 @@ class LandFacades:
         land = self.land_repo.get_by_id(land_id)
         return land
 
-
     def create_land(self, data):
         lat = data.get("latitude")
         lon = data.get("longitude")
@@ -64,6 +63,6 @@ class LandFacades:
         lands = self.land_repo.filter_by_criteria(**filters)
         return self.land_list_schema.dump(lands)
 
-    def get_lands_by_user_id(user_id):
+    def get_lands_by_user_id(self, user_id):
 
         return Land.query.filter_by(owner_id=user_id).all()

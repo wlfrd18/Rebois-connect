@@ -17,11 +17,25 @@ export default function TimelineCard({ item, currentUser }) {
     ? `${item.owner.first_name} ${item.owner.last_name}`
     : "Propriétaire inconnu";
 
-  const imageUrl = item.photo_url || "/default-image.jpg"; // Par défaut si pas d'image
+  const imageUrl = item.photo_url || "/default-image.jpg";
 
   const handleClick = () => {
     if (isLand) navigate(`/lands/${item.id}`);
     if (isProject) navigate(`/projects/${item.id}`);
+  };
+
+  const getStatusBadge = (status) => {
+    const base = "text-xs font-semibold px-2 py-1 rounded-full";
+    switch (status) {
+      case 'proposed':
+        return <span className={`${base} bg-yellow-100 text-yellow-800`}>📝 Proposé</span>;
+      case 'in_progress':
+        return <span className={`${base} bg-blue-100 text-blue-800`}>🚧 En cours</span>;
+      case 'completed':
+        return <span className={`${base} bg-green-100 text-green-800`}>✅ Terminé</span>;
+      default:
+        return <span className={`${base} bg-gray-200 text-gray-800`}>{status}</span>;
+    }
   };
 
   return (
@@ -39,7 +53,7 @@ export default function TimelineCard({ item, currentUser }) {
         <div>
           <h3 className="text-lg font-semibold text-green-800">{title}</h3>
           <p className="text-sm text-gray-600 mb-2">
-            {status} • {createdAt}
+            {getStatusBadge(status)} • {createdAt}
           </p>
 
           <div className="text-sm text-gray-700 space-y-1">

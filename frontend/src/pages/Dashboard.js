@@ -133,7 +133,7 @@ export default function Dashboard() {
       <div className="flex flex-grow overflow-hidden">
         {/* Left Sidebar */}
         <aside className="w-1/4 p-4 overflow-y-auto hidden lg:block">
-          {user ? <ProfileCard user={user} /> : <div>Chargement...</div>}
+          {user ? <ProfileCard user={user} setUser={setUser} /> : <div>Chargement...</div>}
           <div className="mt-8">
             <NewsFeed />
           </div>

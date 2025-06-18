@@ -14,7 +14,7 @@ news_model = api.model('News', {
     'created_at': fields.DateTime(readonly=True),
 })
 
-@api.route('')
+@api.route('/')
 class NewsList(Resource):
     @jwt_required()
     def get(self):
