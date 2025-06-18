@@ -64,5 +64,5 @@ class LandFacades:
         return self.land_list_schema.dump(lands)
 
     def get_lands_by_user_id(self, user_id):
-
-        return Land.query.filter_by(owner_id=user_id).all()
+        lands = self.repo.get_by_filter(owner_id=user_id)
+        return lands
