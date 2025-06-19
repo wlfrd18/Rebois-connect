@@ -67,3 +67,24 @@ class SQLAlchemyRepository(Repository[T]):
                 query = query.filter(getattr(self.model, key) == value)
         return query.all()
     
+    def get_by_user(self, user_id: Any) -> List[T]:
+        """
+        Récupère les enregistrements liés à un user:
+        - Pour un modèle Land: filtre sur owner_id
+        - Pour un modèle Project: filtre sur sponsor_id, volunteer_id ou tech_structure_id
+        """
+        query = self.model.query
+        # Terre
+        if hasattr(self.model, 'owner_id'):
+            return query.filter(self.model.owner_id == user_id).all()
+
+        # Projet
+        if hasattr(self.model, 'sponsor_id') and hasattr(self.model, 'volunteer_id'):
+            return query.filter(
+                (self.model.sponsor_id == user_id) |
+                (self.model.volunteer_id == user_id) |
+                (getattr(self.model, 'tech_structure_id', None) == user_id)
+            ).all()
+
+        # Par défaut, rien
+        return []

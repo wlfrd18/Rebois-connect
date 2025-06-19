@@ -2,11 +2,11 @@ from flask import request
 from flask_restx import Namespace, Resource, fields
 from flask_jwt_extended import jwt_required
 
-from app.facade.news_facade import NewsFacade
+from app.facade import news_facade
 from .auth import require_superuser  # pour vérifier admin
 
 api = Namespace('news', description='Gestion des actualités')
-news_facade = NewsFacade()
+
 
 news_model = api.model('News', {
     'id': fields.String(readonly=True),

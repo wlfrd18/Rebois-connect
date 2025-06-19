@@ -1,7 +1,6 @@
-from .user_facade import UserFacades
-from .land_facade import LandFacades
-from .project_facade import ProjectFacades
+from .user_facade import UserFacade
+from .land_facade import LandFacade as land_facade
+from .project_facade import ProjectFacade as project_facade
+from .news_facade import NewsFacade as news_facade
 
-UserFacade = UserFacades()
-LandFacade = LandFacades()
-ProjectFacade = ProjectFacades()
+user_facade = UserFacade

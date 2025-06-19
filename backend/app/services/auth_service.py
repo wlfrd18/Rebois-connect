@@ -1,5 +1,5 @@
 from flask import jsonify
-from app.facade import UserFacade
+from app.facade.user_facade import UserFacade
 from app.services.token_service import generate_token
 import pyotp
 import random

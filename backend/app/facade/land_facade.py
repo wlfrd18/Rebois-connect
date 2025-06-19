@@ -4,7 +4,7 @@ from app.models.land import Land
 from app.services.geolocation_service import get_country_from_coordinates
 
 
-class LandFacades:
+class LandFacade:
     def __init__(self):
         self.land_repo = LandRepository()
         self.land_schema = LandSchema()
@@ -64,5 +64,5 @@ class LandFacades:
         return self.land_list_schema.dump(lands)
 
     def get_lands_by_user_id(self, user_id):
-        lands = self.repo.get_by_filter(owner_id=user_id)
+        lands = self.land_repo.get_by_user(owner_id=user_id)
         return lands

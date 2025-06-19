@@ -40,8 +40,8 @@ export default function Dashboard() {
 
     // Fetch timeline (lands + projects)
     Promise.all([
-      fetch("/api/v1/lands", { headers }),
-      fetch("/api/v1/projects", { headers })
+      fetch("/lands", { headers }),
+      fetch("/projects", { headers })
     ])
       .then(async ([landsRes, projectsRes]) => {
         const landsData = await landsRes.json();
