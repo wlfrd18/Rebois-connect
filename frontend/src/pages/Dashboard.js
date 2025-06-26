@@ -33,25 +33,28 @@ export default function Dashboard() {
     };
 
     // Fetch current user
-    fetch("/auth/me", { method: "GET", credentials: "include", headers })
+    fetch("/auth/me", { method: "GET", headers })
       .then(res => res.json())
       .then(data => setUser(data))
       .catch(err => console.error("Erreur utilisateur :", err));
 
     // Fetch timeline (lands + projects)
     Promise.all([
-      fetch("/api/v1/lands", { headers }),
-      fetch("/api/v1/projects", { headers })
+      fetch("/lands", { headers }),
+      fetch("/projects", { headers })
     ])
       .then(async ([landsRes, projectsRes]) => {
         const landsData = await landsRes.json();
         const projectsData = await projectsRes.json();
 
-        const combined = [...landsData.lands, ...projectsData.projects];
+        const lands = Array.isArray(landsData) ? landsData : landsData.lands || [];
+        const projects = Array.isArray(projectsData) ? projectsData : projectsData.projects || [];
+
+        const combined = [...lands, ...projects];
         combined.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
         setAllItems(combined);
-        setFilteredItems(combined); // affichage initial
+        setFilteredItems(combined);
       })
       .catch(err => console.error("Erreur timeline :", err));
 

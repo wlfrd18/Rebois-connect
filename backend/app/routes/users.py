@@ -5,7 +5,8 @@ from marshmallow import ValidationError
 from app.schemas.user_schema import UserSchema
 from app.schemas.project_schema import ProjectSchema
 from app.schemas.land_schema import LandSchema
-from app.facade import user_facade, land_facade, project_facade
+from app.facade import user_facade, project_facade
+from app.facade import land_facade
 from .auth import require_superuser
 
 api = Namespace('users', description='Opérations sur les utilisateurs')

@@ -1,5 +1,5 @@
 from flask_restx import Namespace, Resource, fields
-from flask import request
+from flask import request, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from marshmallow import ValidationError
 from app.facade import land_facade
@@ -21,18 +21,20 @@ land_model = api.model('Land', {
 })
 
 lands_model  = api.model('Land', {
-    'id': fields.String,
-    'country': fields.String,
-    'area': fields.Float,
-    'vegetation_type': fields.String,
-    'status': fields.String,
-    'created_at': fields.DateTime,
-    'owner_id': fields.String,
-    'photo_url': fields.String
+    'id': fields.String(readonly=True, description='Land ID'),
+    'country': fields.String(required=False),
+    'area': fields.Float(required=True),
+    'vegetation_type': fields.String(required=True),
+    "feasibility": fields.String(required=True),
+    "latitude": fields.Float(required=True),
+    "longitude": fields.Float(required=True),
+    "weather_data": fields.String(required=False),
+    'status': fields.String(required=False),
+    'owner_id': fields.String(readonly=True, description='Owner ID'),
+    'photo_url': fields.String(required=False)
 })
 
 project_model = api.model('Project', {
-    'id': fields.String,
     'land_id': fields.String,
     'sponsor_id': fields.String,
     'volunteer_id': fields.String,
@@ -108,22 +110,29 @@ class LandList(Resource):
         return land_facade.get_all_lands()
 
     @api.doc('create_land')
-    @api.expect(land_model, validate=True)
-    @api.marshal_with(land_model, code=201)
+    @api.expect(lands_model, validate=True)
+    @api.marshal_with(lands_model, code=201)
     @jwt_required()
     def post(self):
         """Create a new land"""
         try:
             data = request.get_json()
+            current_app.logger.debug(f"Données reçues: {data}")  # Log les données reçues
             data['owner_id'] = get_jwt_identity()
-
+            current_app.logger.debug(f" Owner ID extrait du JWT : {data['owner_id']}")
             validated_data = land_schema.load(data)
+
             new_land = land_facade.create_land(validated_data)
             return land_schema.dump(new_land), 201
 
         except ValidationError as err:
+            current_app.logger.error(f"Erreur de validation: {err.messages}")
             return {'errors': err.messages}, 400
+        except ValueError as ve:
+            current_app.logger.error(f"Erreur de validation custom: {str(ve)}")
+            return {'message': str(ve)}, 400
         except Exception as e:
+            current_app.logger.error(f"Erreur inattendue: {str(e)}")
             return {'message': str(e)}, 400
 
 

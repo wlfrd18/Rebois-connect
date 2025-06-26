@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function TimelineCard({ item, currentUser }) {
   const navigate = useNavigate();
+  const [weather, setWeather] = useState(null);
 
   const isLand = !!item.title;
   const isProject = !!item.project_name;
@@ -38,6 +39,51 @@ export default function TimelineCard({ item, currentUser }) {
     }
   };
 
+  useEffect(() => {
+    const fetchWeather = async () => {
+      const lat = item.latitude || item.lat;
+      const lon = item.longitude || item.lon;
+      if (!lat || !lon) return;
+
+      try {
+        const res = await fetch(
+          `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`
+        );
+        if (res.ok) {
+          const data = await res.json();
+          const current = data.current_weather;
+          setWeather({
+            temperature: current.temperature,
+            windspeed: current.windspeed,
+            weathercode: current.weathercode,
+          });
+        }
+      } catch (err) {
+        console.error("Erreur météo Open-Meteo:", err);
+      }
+    };
+
+    fetchWeather();
+  }, [item]);
+
+  // Optionnel : interprétation des codes météo
+  const weatherDescription = (code) => {
+    const map = {
+      0: "☀️ Clair",
+      1: "🌤 Peu nuageux",
+      2: "⛅️ Partiellement nuageux",
+      3: "☁️ Couvert",
+      45: "🌫 Brouillard",
+      48: "🌫 Brouillard givrant",
+      51: "🌦 Bruine faible",
+      61: "🌧 Pluie faible",
+      71: "❄️ Neige faible",
+      95: "⛈ Orages",
+      // ...
+    };
+    return map[code] || "🌈 Temps inconnu";
+  };
+
   return (
     <div
       className="bg-white p-4 rounded-xl shadow hover:shadow-md transition cursor-pointer border border-green-100 flex flex-col sm:flex-row gap-4"
@@ -61,6 +107,13 @@ export default function TimelineCard({ item, currentUser }) {
             <p><strong>Pays :</strong> {country}</p>
             {area && <p><strong>Surface :</strong> {area}</p>}
             {vegetation && <p><strong>Végétation :</strong> {vegetation}</p>}
+            {weather && (
+              <div className="mt-2 text-sm text-blue-700">
+                <p>
+                  <strong>Météo :</strong> {weatherDescription(weather.weathercode)} – {weather.temperature}°C, {weather.windspeed} km/h
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>

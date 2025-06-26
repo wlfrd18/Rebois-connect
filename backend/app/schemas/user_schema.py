@@ -27,3 +27,5 @@ class UserSchema(Schema):  # Pour la réponse d’un utilisateur
     last_name = fields.String()
     phone = fields.String()
     is_active = fields.Boolean()
+    photo_url = fields.String(required=False)
+    role = fields.String(required=False)

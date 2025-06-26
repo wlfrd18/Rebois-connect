@@ -8,7 +8,8 @@ import Login2FA from './pages/Login2FA';
 import Dashboard from "./pages/Dashboard";
 import PrivateRoute from "./components/PrivateRoute";
 import LandForm from './pages/LandForm';
-
+import Modal from 'react-modal';
+Modal.setAppElement('#root');
 
 const App = () => {
   return (

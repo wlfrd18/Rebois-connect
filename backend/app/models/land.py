@@ -6,7 +6,7 @@ import uuid
 class Land(db.Model):
     __tablename__ = 'lands'
 
-    id: uuid.UUID = db.Column(db.Uuid, primary_key=True)
+    id: uuid.UUID = db.Column(db.Uuid, primary_key=True, default=uuid.uuid4, nullable=False)
     owner_id: int = db.Column(db.Uuid, db.ForeignKey('users.id'), nullable=False)
     area: float = db.Column(db.Float, nullable=False)
     vegetation_type: str = db.Column(db.String(100), nullable=False)

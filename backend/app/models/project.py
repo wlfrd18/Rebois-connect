@@ -2,11 +2,13 @@ from datetime import date
 import uuid
 from typing import Optional
 from ..extensions import db
+from sqlalchemy.dialects.postgresql import UUID
+
 
 class Project(db.Model):
     __tablename__ = 'projects'
 
-    id = db.Column(db.Uuid, primary_key=True, default=uuid.uuid4)
+    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, nullable=False)
 
     land_id = db.Column(db.Uuid, db.ForeignKey('lands.id'), nullable=False)
     sponsor_id = db.Column(db.Uuid, db.ForeignKey('users.id'), nullable=False)

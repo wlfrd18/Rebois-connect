@@ -6,7 +6,7 @@ export default function ProfileCard({ user, setUser }) {
   const navigate = useNavigate();
   const [lands, setLands] = useState([]);
   const [projects, setProjects] = useState([]);
-  const [selectedItem, setSelectedItem] = useState(null); // ← pour la modale
+  const [selectedItem, setSelectedItem] = useState(null);
   const [previewPhoto, setPreviewPhoto] = useState('/default-avatar.png');
 
   useEffect(() => {
@@ -20,7 +20,8 @@ export default function ProfileCard({ user, setUser }) {
   const roleLabels = {
     superuser: "Administrateur",
     sponsor: "Sponsor",
-    volunteer: "Volontaire"
+    volunteer: "Volontaire",
+    tech_structure: "Structure technique"
   };
 
   const getStatusBadge = (status) => {
@@ -31,7 +32,6 @@ export default function ProfileCard({ user, setUser }) {
       completed: { text: "✅ Terminé", bg: "bg-green-100", textColor: "text-green-800" }
     };
     const badge = badgeMap[status] || { text: status, bg: "bg-gray-200", textColor: "text-gray-800" };
-
     return <span className={`${base} ${badge.bg} ${badge.textColor}`}>{badge.text}</span>;
   };
 
@@ -42,17 +42,12 @@ export default function ProfileCard({ user, setUser }) {
 
       try {
         const [landsRes, projectsRes] = await Promise.all([
-          fetch(`/users/${user.id}/lands`, {
-            headers: { Authorization: `Bearer ${token}` }
-          }),
-          fetch(`/users/${user.id}/projects`, {
-            headers: { Authorization: `Bearer ${token}` }
-          })
+          fetch(`/users/${user.id}/lands`, { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(`/users/${user.id}/projects`, { headers: { Authorization: `Bearer ${token}` } })
         ]);
 
         if (landsRes.ok) setLands(await landsRes.json());
         if (projectsRes.ok) setProjects(await projectsRes.json());
-
       } catch (error) {
         console.error("Erreur lors du chargement des terres/projets :", error);
       }
@@ -61,75 +56,57 @@ export default function ProfileCard({ user, setUser }) {
     fetchUserData();
   }, [user]);
 
-const handlePhotoChange = async (e) => {
-  const file = e.target.files[0];
-  console.log("Fichier sélectionné :", file);
-  if (!file || !user?.id) return;
+  const handlePhotoChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file || !user?.id) return;
 
-  const token = localStorage.getItem('access_token');
-  const formData = new FormData();
-  formData.append('file', file);
+    const token = localStorage.getItem('access_token');
+    const formData = new FormData();
+    formData.append('file', file);
 
-  try {
-    // Étape 1 : Upload du fichier vers le backend
-    const uploadRes = await fetch('/upload', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`
-      },
-      body: formData
-    });
+    try {
+      const uploadRes = await fetch('/upload/', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData
+      });
 
-    if (!uploadRes.ok) {
-      console.error('Erreur lors de l’upload');
-      return;
+      if (!uploadRes.ok) {
+        console.error('Erreur lors de l’upload');
+        return;
+      }
+
+      const { photo_url } = await uploadRes.json();
+      setPreviewPhoto(photo_url);
+
+      const updateRes = await fetch(`/users/${user.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ photo_url })
+      });
+
+      if (!updateRes.ok) console.error('Erreur de mise à jour utilisateur');
+
+      const refreshedUserRes = await fetch(`/auth/me`, {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (refreshedUserRes.ok) {
+        const updatedUser = await refreshedUserRes.json();
+        setUser(updatedUser);
+      }
+    } catch (err) {
+      console.error('Erreur complète :', err);
     }
-
-    const { photo_url } = await uploadRes.json();
-
-    console.log("URL de la photo retournée :", photo_url);
-
-    setPreviewPhoto(photo_url); // Affichage immédiat
-
-    console.log("Image de profil mise à jour :", photo_url);
-
-
-    // Étape 2 : Mise à jour du profil utilisateur avec l’URL
-    const updateRes = await fetch(`/users/${user.id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify({ photo_url })
-    });
-
-    if (!updateRes.ok) {
-      console.error('Erreur de mise à jour utilisateur');
-    } else {
-      console.log('Photo mise à jour avec succès');
-    }
-
-  } catch (err) {
-    console.error('Erreur complète :', err);
-  }
-
-  // Optionnel mais recommandé : recharger user à jour
-  const refreshedUserRes = await fetch(`/auth/me`, {
-    method: 'GET',
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  });
-  if (refreshedUserRes.ok) {
-    const updatedUser = await refreshedUserRes.json();
-    setUser(updatedUser);
-  }
-
-};
+  };
 
   return (
     <div className="bg-white rounded-xl p-4 shadow relative">
+      {/* Photo + nom + infos */}
       <div className="relative w-fit mx-auto">
         <img
           src={previewPhoto}
@@ -170,56 +147,71 @@ const handlePhotoChange = async (e) => {
       <button
         onClick={() => {
           localStorage.removeItem("access_token");
-          navigate('/login');
+          navigate('/');
         }}
         className="mt-2 w-full bg-red-500 text-white py-2 rounded hover:bg-red-600"
       >
         Déconnexion
       </button>
 
-      {/* Liste des terres */}
-      <div className="mt-6">
-        <h4 className="text-md font-semibold mb-2 text-green-800">🌍 Terres postées</h4>
-        {lands.length > 0 ? (
-          <ul className="space-y-1 text-sm text-gray-700">
-            {lands.map((land) => (
-              <li
-                key={land.id}
-                className="flex justify-between items-center border-b pb-1 hover:text-green-700 cursor-pointer"
-                onClick={() => navigate(`/lands/${land.id}`)}
-              >
-                <span>{land.title || `Terre #${land.id}`}</span>
-                {getStatusBadge(land.status)}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-sm text-gray-500 italic">Aucune terre postée.</p>
-        )}
+      {/* Scrollable Terres et Projets */}
+      <div className="mt-6 space-y-4">
+        {/* Terres */}
+        <div>
+          <h4 className="text-md font-semibold mb-2 text-green-800">🌍 Terres postées</h4>
+          <div className="max-h-48 overflow-y-auto pr-1 space-y-2">
+            {lands.length > 0 ? (
+              lands.map((land) => (
+                <div
+                  key={land.id}
+                  onClick={() => setSelectedItem(land)}
+                  className="flex items-center gap-3 bg-green-50 border border-green-200 rounded-lg p-2 hover:shadow cursor-pointer transition"
+                >
+                  <img
+                    src={land.photo_url || "/placeholder-land.jpg"}
+                    alt={land.title || `Terre #${land.id}`}
+                    className="w-10 h-10 object-cover rounded-md"
+                  />
+                  <div className="flex-1">
+                    <p className="font-medium text-sm">{land.title || `Terre #${land.id}`}</p>
+                    {getStatusBadge(land.status)}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-gray-500 italic">Aucune terre postée.</p>
+            )}
+          </div>
+        </div>
+
+        {/* Projets */}
+        <div>
+          <h4 className="text-md font-semibold mb-2 text-green-800">📦 Projets associés</h4>
+          <div className="max-h-48 overflow-y-auto pr-1 space-y-2">
+            {projects.length > 0 ? (
+              projects.map((project) => (
+                <div
+                  key={project.id}
+                  onClick={() => setSelectedItem(project)}
+                  className="flex items-center gap-3 bg-blue-50 border border-blue-200 rounded-lg p-2 hover:shadow cursor-pointer transition"
+                >
+                  <div className="w-10 h-10 bg-blue-100 flex items-center justify-center rounded-md text-blue-600 text-lg font-bold">
+                    📁
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium text-sm">{project.project_name || `Projet #${project.id}`}</p>
+                    {getStatusBadge(project.status)}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-gray-500 italic">Aucun projet associé.</p>
+            )}
+          </div>
+        </div>
       </div>
 
-      {/* Liste des projets */}
-      <div className="mt-6">
-        <h4 className="text-md font-semibold mb-2 text-green-800">📦 Projets associés</h4>
-        {projects.length > 0 ? (
-          <ul className="space-y-1 text-sm text-gray-700">
-            {projects.map((project) => (
-              <li
-                key={project.id}
-                className="flex justify-between items-center border-b pb-1 hover:text-green-700 cursor-pointer"
-                onClick={() => setSelectedItem(project)}
-              >
-                <span>{project.project_name || `Projet #${project.id}`}</span>
-                {getStatusBadge(project.status)}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-sm text-gray-500 italic">Aucun projet associé.</p>
-        )}
-      </div>
-
-      {/* Modal d'affichage détaillé */}
+      {/* Modal projet */}
       {selectedItem && (
         <ItemModal
           item={selectedItem}

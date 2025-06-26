@@ -60,7 +60,6 @@ project_detailed_model = api.model('ProjectDetailed', {
 class ProjectList(Resource):
     @api.doc('list_projects_detailed')
     @api.marshal_list_with(project_detailed_model)
-    @jwt_required()
     def get(self):
         return project_facade.get_all_projects_detailed()
 

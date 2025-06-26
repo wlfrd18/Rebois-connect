@@ -12,7 +12,7 @@ export default function NewsFeed({ currentUser }) {
     const fetchNews = async () => {
       try {
         const token = localStorage.getItem("access_token");
-        const res = await fetch("/api/v1/news", {
+        const res = await fetch("/news", {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
@@ -30,7 +30,7 @@ export default function NewsFeed({ currentUser }) {
 
     try {
       const token = localStorage.getItem("access_token");
-      const res = await fetch("/api/v1/news", {
+      const res = await fetch("/news", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -57,7 +57,7 @@ export default function NewsFeed({ currentUser }) {
 
     try {
       const token = localStorage.getItem("access_token");
-      const res = await fetch(`/api/v1/news/${id}`, {
+      const res = await fetch(`/news/${id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -79,7 +79,7 @@ export default function NewsFeed({ currentUser }) {
 
     try {
       const token = localStorage.getItem("access_token");
-      const res = await fetch(`/api/v1/news/${id}`, {
+      const res = await fetch(`/news/${id}`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,

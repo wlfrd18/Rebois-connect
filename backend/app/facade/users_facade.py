@@ -4,7 +4,7 @@ from app.schemas.user_schema import UserSchema
 from app.models.user import User
 from app.extensions import db
 
-class UserFacades:
+class UserFacade:
     def __init__(self):
         self.user_repo = UserRepository()
         self.user_schema = UserSchema()

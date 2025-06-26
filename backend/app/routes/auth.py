@@ -1,6 +1,6 @@
 from flask_restx import Namespace, Resource, fields
 from flask import request, session, url_for
-from app.facade import UserFacade
+from app.facade import user_facade
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
 from datetime import timedelta
 from app.schemas.user_schema import UserRegisterSchema, UserLoginSchema, User2FASchema, UserSchema
@@ -34,7 +34,7 @@ user_2fa_model = api.model('User2FA', {
 
 def require_superuser():
     user_id = get_jwt_identity()
-    user = UserFacade.get_user_by_id(user_id)
+    user = user_facade.get_user_by_id(user_id)
     if not user or user.role != 'superuser':
         api.abort(403, "Accès réservé au super utilisateur")
 
@@ -48,11 +48,11 @@ class Register(Resource):
             data = api.payload
             validated_data = UserRegisterSchema().load(data)
 
-            if UserFacade.get_user_by_email(validated_data['email']):
+            if user_facade.get_user_by_email(validated_data['email']):
                 return {'message': 'User already exists'}, 409
 
             # Créer un nouvel utilisateur sans 2FA
-            new_user = UserFacade.create_user(data)
+            new_user = user_facade.create_user(data)
             token = generate_activation_token(new_user['email'])
             activation_link = url_for('auth_activate_user', token=token, _external=True)
             send_activation_email(new_user['email'], activation_link)
@@ -73,7 +73,7 @@ class Login(Resource):
             data = request.get_json()
             validated_data = UserLoginSchema().load(data)
 
-            user = UserFacade.get_a_user_by_email(validated_data['email'])
+            user = user_facade.get_a_user_by_email(validated_data['email'])
             if not user or not user.check_password(validated_data['password']):
                 return {'message': 'Invalid email or password'}, 401
 
@@ -99,7 +99,7 @@ class Login2FA(Resource):
             data = request.get_json()
             validated_data = User2FASchema().load(data)
 
-            user = UserFacade.get_a_user_by_email(validated_data['email'])
+            user = user_facade.get_a_user_by_email(validated_data['email'])
             if not user:
                 return {'message': 'User not found'}, 404
 
@@ -127,7 +127,7 @@ class ActivateUser(Resource):
                 return {'message': 'Invalid or expired activation token'}, 400
 
             # Récupérer l'utilisateur par email
-            user = UserFacade.get_user_by_email(email)
+            user = user_facade.get_user_by_email(email)
             if not user:
                 return {'message': 'User not found'}, 404
 
@@ -135,7 +135,7 @@ class ActivateUser(Resource):
             if user.get('is_active'):
                 return {'message': 'User already activated'}, 200
 
-            updated_user = UserFacade.activate_user(email)
+            updated_user = user_facade.activate_user(email)
             if not updated_user:
                 return {'message': 'User not found'}, 404
 
@@ -149,7 +149,7 @@ class Me(Resource):
     @jwt_required()
     def get(self):
         user_id = get_jwt_identity()
-        user = UserFacade.get_a_user_by_id(user_id)
+        user = user_facade.get_a_user_by_id(user_id)
         if not user:
             return {'message': 'User not found'}, 404
         return user_schema.dump(user), 200

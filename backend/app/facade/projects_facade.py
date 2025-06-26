@@ -3,14 +3,14 @@ from app.schemas.project_schema import ProjectSchema
 from app.models.project import Project
 from app.extensions import db
 
-class ProjectFacades:
+class ProjectFacade:
     def __init__(self):
         self.project_repo = ProjectRepository()
         self.land_repo = LandRepository()  # nouvelle dépendance
         self.project_schema = ProjectSchema()
         self.project_list_schema = ProjectSchema(many=True)
 
-    def get_all_projects_detailed():
+    def get_all_projects_detailed(self):
         return Project.query.options(
             db.joinedload(Project.land),
             db.joinedload(Project.sponsor),
@@ -62,5 +62,5 @@ class ProjectFacades:
 
     def get_projects_by_user_id(self, user_id):
         # filtre sur sponsor_id, volunteer_id ou tech_structure_id
-        projs = self.repo.get_by_user(user_id)
+        projs = self.project_repo.get_by_user(user_id)
         return projs
