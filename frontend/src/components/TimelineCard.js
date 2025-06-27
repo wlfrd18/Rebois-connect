@@ -1,97 +1,86 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 
-export default function TimelineCard({ item, currentUser }) {
+export default function TimelineCard({ item }) {
   const navigate = useNavigate();
-  const [weather, setWeather] = useState(null);
 
-  const isLand = !!item.title;
-  const isProject = !!item.project_name;
+  const isLand = !!item.owner_id;
+  const isProject = !!item.sponsor_id;
 
-  const title = isLand ? item.title : item.project_name || "Projet sans nom";
-  const status = item.status || "Inconnu";
-  const createdAt = item.created_at?.split("T")[0] || "Date inconnue";
-  const country = item.country || "Pays inconnu";
-  const area = item.area ? `${item.area} ha` : null;
-  const vegetation = item.vegetation_type || null;
-  const ownerName = item.owner
-    ? `${item.owner.first_name} ${item.owner.last_name}`
-    : "Propriétaire inconnu";
+  const land = isProject ? item.land || {} : item;
 
-  const imageUrl = item.photo_url || "/default-image.jpg";
+  const title = `ID du ${isProject ? "projet" : "terrain"} : ${item.id}`;
+  const status = item.status || "proposed";
+
+  const createdAt =
+    item.created_at?.split("T")[0] ||
+    land.created_at?.split("T")[0] ||
+    "Date inconnue";
+
+  const country = land.country || "Pays inconnu";
+  const area = land.area ? `${land.area} ha` : null;
+  const vegetation = land.vegetation_type || null;
+  const imageUrl = item.photo_url || land.photo_url || "/placeholder-land.jpg";
+
+  const rawWeather = land.weather_data || item.weather_data;
+  let currentWeather = null;
+
+  if (rawWeather) {
+    try {
+      const wd = typeof rawWeather === "string" ? JSON.parse(rawWeather) : rawWeather;
+      currentWeather = wd?.current_weather || wd?.current || null;
+    } catch (e) {
+      console.error("Erreur parsing weather_data", e);
+    }
+  }
+
+  const ownerName =
+    item.owner
+      ? `${item.owner.first_name} ${item.owner.last_name}`.trim()
+      : "";
+  const sponsorName =
+    item.sponsor
+      ? `${item.sponsor.first_name} ${item.sponsor.last_name}`.trim()
+      : "";
+  const volunteerName =
+    item.volunteer
+      ? `${item.volunteer.first_name} ${item.volunteer.last_name}`.trim()
+      : "";
+  const techStructureName =
+    item.tech_structure
+      ? `${item.tech_structure.first_name} ${item.tech_structure.last_name}`.trim()
+      : "";
+
+  const getStatusBadge = (st) => {
+    const base = "text-xs font-semibold px-2 py-1 rounded-full";
+    const map = {
+      proposed: ["bg-yellow-100", "text-yellow-800", "📝 Proposé"],
+      in_progress: ["bg-blue-100", "text-blue-800", "🚧 En cours"],
+      completed: ["bg-green-100", "text-green-800", "✅ Terminé"],
+    };
+    const [bg, textColor, label] = map[st] || [
+      "bg-gray-200",
+      "text-gray-800",
+      st,
+    ];
+    return <span className={`${base} ${bg} ${textColor}`}>{label}</span>;
+  };
 
   const handleClick = () => {
-    if (isLand) navigate(`/lands/${item.id}`);
-    if (isProject) navigate(`/projects/${item.id}`);
-  };
-
-  const getStatusBadge = (status) => {
-    const base = "text-xs font-semibold px-2 py-1 rounded-full";
-    switch (status) {
-      case 'proposed':
-        return <span className={`${base} bg-yellow-100 text-yellow-800`}>📝 Proposé</span>;
-      case 'in_progress':
-        return <span className={`${base} bg-blue-100 text-blue-800`}>🚧 En cours</span>;
-      case 'completed':
-        return <span className={`${base} bg-green-100 text-green-800`}>✅ Terminé</span>;
-      default:
-        return <span className={`${base} bg-gray-200 text-gray-800`}>{status}</span>;
-    }
-  };
-
-  useEffect(() => {
-    const fetchWeather = async () => {
-      const lat = item.latitude || item.lat;
-      const lon = item.longitude || item.lon;
-      if (!lat || !lon) return;
-
-      try {
-        const res = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`
-        );
-        if (res.ok) {
-          const data = await res.json();
-          const current = data.current_weather;
-          setWeather({
-            temperature: current.temperature,
-            windspeed: current.windspeed,
-            weathercode: current.weathercode,
-          });
-        }
-      } catch (err) {
-        console.error("Erreur météo Open-Meteo:", err);
-      }
-    };
-
-    fetchWeather();
-  }, [item]);
-
-  // Optionnel : interprétation des codes météo
-  const weatherDescription = (code) => {
-    const map = {
-      0: "☀️ Clair",
-      1: "🌤 Peu nuageux",
-      2: "⛅️ Partiellement nuageux",
-      3: "☁️ Couvert",
-      45: "🌫 Brouillard",
-      48: "🌫 Brouillard givrant",
-      51: "🌦 Bruine faible",
-      61: "🌧 Pluie faible",
-      71: "❄️ Neige faible",
-      95: "⛈ Orages",
-      // ...
-    };
-    return map[code] || "🌈 Temps inconnu";
+    navigate(isLand ? `/lands/${item.id}` : `/projects/${item.id}`);
   };
 
   return (
     <div
       className="bg-white p-4 rounded-xl shadow hover:shadow-md transition cursor-pointer border border-green-100 flex flex-col sm:flex-row gap-4"
       onClick={handleClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => e.key === "Enter" && handleClick()}
     >
       <img
         src={imageUrl}
-        alt="Aperçu"
+        alt="aperçu"
         className="w-full sm:w-40 h-32 object-cover rounded-lg"
       />
 
@@ -103,18 +92,50 @@ export default function TimelineCard({ item, currentUser }) {
           </p>
 
           <div className="text-sm text-gray-700 space-y-1">
-            <p><strong>Propriétaire :</strong> {ownerName}</p>
-            <p><strong>Pays :</strong> {country}</p>
+            {ownerName && <p><strong>Propriétaire :</strong> {ownerName}</p>}
+            {country && <p><strong>Pays :</strong> {country}</p>}
             {area && <p><strong>Surface :</strong> {area}</p>}
-            {vegetation && <p><strong>Végétation :</strong> {vegetation}</p>}
-            {weather && (
-              <div className="mt-2 text-sm text-blue-700">
-                <p>
-                  <strong>Météo :</strong> {weatherDescription(weather.weathercode)} – {weather.temperature}°C, {weather.windspeed} km/h
-                </p>
-              </div>
+            {vegetation && isLand && (
+              <p><strong>Végétation :</strong> {vegetation}</p>
+            )}
+
+            {isProject && (
+              <>
+                {sponsorName && <p><strong>Sponsor :</strong> {sponsorName}</p>}
+                {volunteerName && (
+                  <p><strong>Volontaire :</strong> {volunteerName}</p>
+                )}
+                {techStructureName && (
+                  <p><strong>Structure technique :</strong> {techStructureName}</p>
+                )}
+                {item.report && (
+                  <p className="italic text-gray-600">
+                    <strong>Rapport :</strong> {item.report}
+                  </p>
+                )}
+              </>
             )}
           </div>
+
+          {currentWeather && (
+            <div className="mt-3 text-sm text-blue-700 bg-blue-50 p-2 rounded">
+              {currentWeather.temperature != null && (
+                <p>
+                  🌡 Température : <strong>{currentWeather.temperature}°C</strong>
+                </p>
+              )}
+              {currentWeather.windspeed != null && (
+                <p>
+                  💨 Vent : <strong>{currentWeather.windspeed} km/h</strong>
+                </p>
+              )}
+              {currentWeather.winddirection != null && (
+                <p>
+                  🧭 Direction : <strong>{currentWeather.winddirection}°</strong>
+                </p>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>

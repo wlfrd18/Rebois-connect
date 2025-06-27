@@ -12,105 +12,122 @@ export default function Dashboard() {
   const [filteredItems, setFilteredItems] = useState([]);
   const [messages, setMessages] = useState([]);
   const [showMessenger, setShowMessenger] = useState(true);
-
   const [filters, setFilters] = useState({
-    country: "",
-    area: "",
-    vegetation_type: "",
-    created_at: "",
-    owner: "",
-    sponsor: "",
-    volunteer: "",
-    tech_structure: ""
+    country: "", area: "", vegetation_type: "", created_at: "",
+    owner: "", sponsor: "", volunteer: "", tech_structure: ""
   });
 
   useEffect(() => {
     const token = localStorage.getItem("access_token");
-
+    if (!token) return;
     const headers = {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json"
     };
 
-    // Fetch current user
-    fetch("/auth/me", { method: "GET", headers })
-      .then(res => res.json())
-      .then(data => setUser(data))
-      .catch(err => console.error("Erreur utilisateur :", err));
+    const fetchUserById = async (id) => {
+      if (!id) return null;
+      const res = await fetch(`/users/${id}`, { headers });
+      if (!res.ok) return null;
+      return res.json().catch(() => null);
+    };
 
-    // Fetch timeline (lands + projects)
-    Promise.all([
-      fetch("/lands", { headers }),
-      fetch("/projects", { headers })
-    ])
-      .then(async ([landsRes, projectsRes]) => {
-        const landsData = await landsRes.json();
-        const projectsData = await projectsRes.json();
+    (async () => {
+      const meRes = await fetch("/auth/me", { headers });
+      if (meRes.ok) setUser(await meRes.json());
 
-        const lands = Array.isArray(landsData) ? landsData : landsData.lands || [];
-        const projects = Array.isArray(projectsData) ? projectsData : projectsData.projects || [];
+      const [landsRes, projectsRes] = await Promise.all([
+        fetch("/lands", { headers }), 
+        fetch("/projects", { headers })
+      ]);
+      const lands = landsRes.ok ? await landsRes.json() : [];
+      const projects = projectsRes.ok ? await projectsRes.json() : [];
+      const combined = [
+        ...(Array.isArray(lands) ? lands : lands.lands || []),
+        ...(Array.isArray(projects) ? projects : projects.projects || [])
+      ];
 
-        const combined = [...lands, ...projects];
-        combined.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      const userIdSet = new Set();
+      combined.forEach(it => {
+        ["owner_id","sponsor_id","volunteer_id","tech_structure_id"].forEach(k => {
+          if (it[k]) userIdSet.add(it[k]);
+        });
+        if (it.land?.owner_id) userIdSet.add(it.land.owner_id);
+      });
 
-        setAllItems(combined);
-        setFilteredItems(combined);
-      })
-      .catch(err => console.error("Erreur timeline :", err));
+      const usersArr = await Promise.all([...userIdSet].map(id => fetchUserById(id)));
+      const usersMap = {};
+      usersArr.forEach(u => { if (u?.id) usersMap[u.id] = u; });
 
-    // Fetch messages
-    fetch("/messages", { method: "GET", credentials: "include", headers })
-      .then(res => res.json())
-      .then(data => setMessages(data))
-      .catch(err => console.error("Erreur messages :", err));
+      const enriched = combined.map(item => {
+        const data = { ...item };
+
+        // 🚧 Correction ici : wrap dans { current_weather }
+        let cw = null;
+        try {
+          const raw = typeof item.weather_data === "string"
+            ? JSON.parse(item.weather_data)
+            : item.weather_data;
+          cw = raw?.current_weather;
+        } catch {
+          cw = null;
+        }
+        data.weather_data = cw ? { current_weather: cw } : null;
+
+        data.owner = item.owner_id && usersMap[item.owner_id];
+        data.sponsor = item.sponsor_id && usersMap[item.sponsor_id];
+        data.volunteer = item.volunteer_id && usersMap[item.volunteer_id];
+        data.tech_structure = item.tech_structure_id && usersMap[item.tech_structure_id];
+
+        if (item.land) {
+          data.land = {
+            ...item.land,
+            owner: usersMap[item.land.owner_id]
+          };
+        }
+
+        return data;
+      });
+
+      enriched.sort((a, b) => {
+        const da = new Date(a.created_at || a.start_date || 0);
+        const db = new Date(b.created_at || b.start_date || 0);
+        return db - da;
+      });
+
+      setAllItems(enriched);
+      setFilteredItems(enriched);
+
+      const msgsRes = await fetch("/messages", { headers });
+      if (msgsRes.ok) setMessages(await msgsRes.json());
+    })();
   }, []);
 
   useEffect(() => {
-    const noFiltersApplied = Object.values(filters).every(val => !val || val.trim() === "");
+    const noFilter = Object.values(filters).every(v => !v || v.trim() === "");
+    if (noFilter) return setFilteredItems(allItems);
 
-    if (noFiltersApplied) {
-      setFilteredItems(allItems);
-      return;
-    }
-
-    const filtered = allItems.filter(item => {
-      if (!item) return false;
-
+    const f = allItems.filter(item => {
       const land = item.land || item;
-
-      // Sécurisation des noms composés
-      const ownerName = `${land.owner?.first_name || ""} ${land.owner?.last_name || ""}`.trim();
-      const sponsorName = `${item.sponsor?.first_name || ""} ${item.sponsor?.last_name || ""}`.trim();
-      const volunteerName = `${item.volunteer?.first_name || ""} ${item.volunteer?.last_name || ""}`.trim();
-      const techStructureName = `${item.tech_structure?.first_name || ""} ${item.tech_structure?.last_name || ""}`.trim();
+      const on = `${land.owner?.first_name||""} ${land.owner?.last_name||""}`.toLowerCase();
+      const sp = `${item.sponsor?.first_name||""} ${item.sponsor?.last_name||""}`.toLowerCase();
+      const vo = `${item.volunteer?.first_name||""} ${item.volunteer?.last_name||""}`.toLowerCase();
+      const te = `${item.tech_structure?.first_name||""} ${item.tech_structure?.last_name||""}`.toLowerCase();
 
       return (
-        (!filters.country || (land.country || "").toLowerCase().includes(filters.country.toLowerCase())) &&
-        (!filters.area || (land.area || "").toString().includes(filters.area)) &&
-        (!filters.vegetation_type || (land.vegetation_type || "").toLowerCase().includes(filters.vegetation_type.toLowerCase())) &&
-        (!filters.created_at || (land.created_at || "").startsWith(filters.created_at)) &&
-        (!filters.owner || ownerName.toLowerCase().includes(filters.owner.toLowerCase())) &&
-        (!filters.sponsor || sponsorName.toLowerCase().includes(filters.sponsor.toLowerCase())) &&
-        (!filters.volunteer || volunteerName.toLowerCase().includes(filters.volunteer.toLowerCase())) &&
-        (!filters.tech_structure || techStructureName.toLowerCase().includes(filters.tech_structure.toLowerCase()))
+        (!filters.country || (land.country||"").toLowerCase().includes(filters.country)) &&
+        (!filters.area || (land.area||"").toString().includes(filters.area)) &&
+        (!filters.vegetation_type || (land.vegetation_type||"").toLowerCase().includes(filters.vegetation_type)) &&
+        (!filters.created_at || (land.created_at||"").startsWith(filters.created_at)) &&
+        (!filters.owner || on.includes(filters.owner.toLowerCase())) &&
+        (!filters.sponsor || sp.includes(filters.sponsor.toLowerCase())) &&
+        (!filters.volunteer || vo.includes(filters.volunteer.toLowerCase())) &&
+        (!filters.tech_structure || te.includes(filters.tech_structure.toLowerCase()))
       );
     });
 
-    setFilteredItems(filtered);
+    setFilteredItems(f);
   }, [filters, allItems]);
-
-  const handleResetFilters = () => {
-    setFilters({
-      country: "",
-      area: "",
-      vegetation_type: "",
-      created_at: "",
-      owner: "",
-      sponsor: "",
-      volunteer: "",
-      tech_structure: ""
-    });
-  };
 
   return (
     <div className="min-h-screen flex flex-col bg-green-50">
@@ -118,41 +135,32 @@ export default function Dashboard() {
         <div className="flex-grow w-full">
           <SearchBar filters={filters} onChange={setFilters} />
           <button
-            onClick={handleResetFilters}
+            onClick={() => {
+              const reset = {};
+              Object.keys(filters).forEach(k => reset[k] = "");
+              setFilters(reset);
+            }}
             className="mt-2 text-sm text-red-600 underline hover:text-red-800"
           >
             Réinitialiser les filtres
           </button>
         </div>
-
-        <button
-          onClick={() => setShowMessenger(!showMessenger)}
-          className="text-green-700 font-semibold border px-4 py-2 rounded hover:bg-green-100 whitespace-nowrap"
-        >
+        <button onClick={() => setShowMessenger(!showMessenger)} className="text-green-700 font-semibold border px-4 py-2 rounded hover:bg-green-100 whitespace-nowrap">
           {showMessenger ? "Masquer" : "Afficher"} Messagerie
         </button>
       </header>
 
       <div className="flex flex-grow overflow-hidden">
-        {/* Left Sidebar */}
         <aside className="w-1/4 p-4 overflow-y-auto hidden lg:block">
           {user ? <ProfileCard user={user} setUser={setUser} /> : <div>Chargement...</div>}
-          <div className="mt-8">
-            <NewsFeed />
-          </div>
+          <div className="mt-8"><NewsFeed /></div>
         </aside>
 
-        {/* Main Timeline */}
-        <main className={`p-4 overflow-y-auto transition-all duration-300 ${showMessenger ? "w-2/4" : "w-3/4"} mx-auto`}>
+        <main className={`p-4 overflow-y-auto transition-all duration-300 ${showMessenger?"w-2/4":"w-3/4"} mx-auto`}>
           <Timeline items={filteredItems} currentUser={user} />
         </main>
 
-        {/* Right Messaging Panel */}
-        {showMessenger && (
-          <aside className="w-1/4 p-4 border-l overflow-y-auto hidden lg:block">
-            <MessagePanel messages={messages} />
-          </aside>
-        )}
+        {showMessenger && <aside className="w-1/4 p-4 border-l overflow-y-auto hidden lg:block"><MessagePanel messages={messages} /></aside>}
       </div>
     </div>
   );
