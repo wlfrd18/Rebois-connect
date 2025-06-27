@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ItemModal from './ItemModal';
+import PhotoModal from './PhotoModal'; // 📸 Import de la modal photo
 
 export default function ProfileCard({ user, setUser }) {
   const navigate = useNavigate();
@@ -8,6 +9,7 @@ export default function ProfileCard({ user, setUser }) {
   const [projects, setProjects] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
   const [previewPhoto, setPreviewPhoto] = useState('/default-avatar.png');
+  const [photoModalOpen, setPhotoModalOpen] = useState(false); // 🔍 état pour la modal
 
   useEffect(() => {
     if (user?.photo_url) {
@@ -110,8 +112,9 @@ export default function ProfileCard({ user, setUser }) {
       <div className="relative w-fit mx-auto">
         <img
           src={previewPhoto}
-          alt={`profil`}
-          className="w-16 h-16 rounded-full object-cover mx-auto"
+          alt="profil"
+          onClick={() => setPhotoModalOpen(true)}
+          className="w-24 h-24 rounded-full object-cover mx-auto cursor-pointer hover:scale-105 transition"
         />
         <label
           htmlFor="photo-upload"
@@ -186,7 +189,7 @@ export default function ProfileCard({ user, setUser }) {
 
         {/* Projets */}
         <div>
-          <h4 className="text-md font-semibold mb-2 text-green-800">📦 Projets associés</h4>
+          <h4 className="text-md font-semibold mb-2 text-blue-800">📦 Projets associés</h4>
           <div className="max-h-48 overflow-y-auto pr-1 space-y-2">
             {projects.length > 0 ? (
               projects.map((project) => (
@@ -218,6 +221,11 @@ export default function ProfileCard({ user, setUser }) {
           currentUser={user}
           onClose={() => setSelectedItem(null)}
         />
+      )}
+
+      {/* Modal photo */}
+      {photoModalOpen && (
+        <PhotoModal src={previewPhoto} onClose={() => setPhotoModalOpen(false)} />
       )}
     </div>
   );
