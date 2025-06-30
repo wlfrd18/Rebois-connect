@@ -28,7 +28,7 @@ export default function SponsorModal({
           <option value="">-- Choisissez une structure technique --</option>
           {techStructures.map((ts) => (
             <option key={ts.id} value={ts.id}>
-              {ts.name}
+              {ts.first_name}
             </option>
           ))}
         </select>

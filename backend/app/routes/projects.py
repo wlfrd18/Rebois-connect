@@ -60,7 +60,8 @@ project_detailed_model = api.model('ProjectDetailed', {
 class ProjectList(Resource):
     @api.doc('list_projects_detailed')
     def get(self):
-        return project_facade.get_all_projects_detailed()
+        projects = project_facade.get_all_projects_detailed()
+        return projects
 
 
     @api.doc('create_project')
@@ -96,7 +97,6 @@ class Project(Resource):
     @api.expect(project_model)
     @jwt_required()
     def put(self, project_id):
-        require_superuser()
         raw_data = request.get_json()
         schema = ProjectSchema()
         try:
@@ -104,9 +104,33 @@ class Project(Resource):
         except ValidationError as err:
             return {'message': 'Validation error', 'errors': err.messages}, 400
 
+        # Récupérer l'utilisateur connecté
+        current_user_id = get_jwt_identity()
+        current_user = user_facade.get_user_by_id(current_user_id)
+        if not current_user:
+            api.abort(401, "Utilisateur non authentifié")
+
+        # Récupérer le projet
+        project = project_facade.get_project_by_id(project_id)
+        if not project:
+            api.abort(404, "Project not found")
+
+        # Vérification des droits
+        # L'utilisateur doit être soit le sponsor du projet,
+        # soit la structure technique en charge,
+        # soit un superuser
+        allowed_user_ids = [
+            project.sponsor_id,
+            project.tech_structure_id
+        ]
+        if current_user.role != "superuser" and current_user_id not in allowed_user_ids:
+            api.abort(403, "Accès refusé : vous n'êtes pas autorisé à modifier ce projet")
+
+        # Mise à jour partielle (typiquement le champ 'report')
         updated_project = project_facade.update_project(project_id, validated_data)
         if not updated_project:
             api.abort(404, "Project not found")
+
         return updated_project
 
     @api.doc('delete_project')

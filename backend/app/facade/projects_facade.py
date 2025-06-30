@@ -1,5 +1,5 @@
 from ..persistence.repository_services import ProjectRepository, LandRepository  # importer LandRepository
-from app.schemas.project_schema import ProjectSchema
+from app.schemas.project_schema import ProjectSchema, ProjectFullSchema
 from app.models.project import Project
 from app.extensions import db
 
@@ -8,15 +8,18 @@ class ProjectFacade:
         self.project_repo = ProjectRepository()
         self.land_repo = LandRepository()  # nouvelle dépendance
         self.project_schema = ProjectSchema()
+        self.project_full_schema = ProjectFullSchema()
         self.project_list_schema = ProjectSchema(many=True)
+        self.project_full_list_schema = ProjectFullSchema(many=True)
 
     def get_all_projects_detailed(self):
-        return Project.query.options(
+        projects = Project.query.options(
             db.joinedload(Project.land),
             db.joinedload(Project.sponsor),
             db.joinedload(Project.volunteer),
             db.joinedload(Project.tech_structure)
         ).order_by(Project.start_date.desc()).all()
+        return self.project_full_list_schema.dump(projects)
 
     def get_all_projects(self):
         projects = self.project_repo.get_all()

@@ -8,6 +8,7 @@ from app.schemas.land_schema import LandSchema
 from app.facade import user_facade, project_facade
 from app.facade import land_facade
 from .auth import require_superuser
+import uuid
 
 api = Namespace('users', description='Opérations sur les utilisateurs')
 
@@ -45,6 +46,11 @@ class UserResource(Resource):
     @jwt_required()
     def get(self, user_id):
         """Récupérer un utilisateur par ID"""
+        try:
+            uuid.UUID(user_id)
+        except ValueError:
+            api.abort(400, "Format d'identifiant invalide. Un UUID est requis.")
+
         user = user_facade.get_user_by_id(user_id)
         if not user:
             api.abort(404, "Utilisateur non trouvé")
@@ -57,7 +63,6 @@ class UserResource(Resource):
         'phone': fields.String,
         'photo_url': fields.String,
     }))
-    @api.marshal_with(user_model)
     @jwt_required()
     def put(self, user_id):
         """Mettre à jour uniquement son propre profil (nom, prénom, téléphone, photo)"""

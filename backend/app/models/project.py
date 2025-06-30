@@ -18,6 +18,7 @@ class Project(db.Model):
     start_date = db.Column(db.Date, nullable=True)
     end_date = db.Column(db.Date, nullable=True)
     report = db.Column(db.Text, nullable=True)
+    rating = db.column(db.String )
     status = db.Column(db.String(30), default='proposed', nullable=False)
     photo_url = db.Column(db.String(255), nullable=True)
 

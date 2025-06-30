@@ -37,7 +37,7 @@ export default function Dashboard() {
       if (meRes.ok) setUser(await meRes.json());
 
       const [landsRes, projectsRes] = await Promise.all([
-        fetch("/lands", { headers }), 
+        fetch("/lands", { headers }),
         fetch("/projects", { headers })
       ]);
       const lands = landsRes.ok ? await landsRes.json() : [];
@@ -49,10 +49,14 @@ export default function Dashboard() {
 
       const userIdSet = new Set();
       combined.forEach(it => {
-        ["owner_id","sponsor_id","volunteer_id","tech_structure_id"].forEach(k => {
-          if (it[k]) userIdSet.add(it[k]);
+        ["owner_id", "sponsor_id", "volunteer_id", "tech_structure_id"].forEach(k => {
+          if (it[k]) {
+            userIdSet.add(String(it[k]));
+          }
         });
-        if (it.land?.owner_id) userIdSet.add(it.land.owner_id);
+        if (it.land?.owner_id) {
+          userIdSet.add(String(it.land.owner_id));
+        }
       });
 
       const usersArr = await Promise.all([...userIdSet].map(id => fetchUserById(id)));
@@ -62,7 +66,6 @@ export default function Dashboard() {
       const enriched = combined.map(item => {
         const data = { ...item };
 
-        // 🚧 Correction ici : wrap dans { current_weather }
         let cw = null;
         try {
           const raw = typeof item.weather_data === "string"
@@ -129,6 +132,19 @@ export default function Dashboard() {
     setFilteredItems(f);
   }, [filters, allItems]);
 
+  // === FILTRAGE SUPPLÉMENTAIRE POUR CACHER LES LANDS AYANT UN PROJET SPONSORISÉ LIÉ ===
+  const filteredWithoutSponsoredLands = filteredItems.filter(item => {
+    // On cible les lands (supposons qu'ils ont owner_id)
+    if (item.owner_id) {
+      // Vérifier s'il existe un projet sponsorisé lié au land (même id de land)
+      const hasSponsoredProject = filteredItems.some(
+        i => i.sponsor_id && i.land_id === item.id
+      );
+      return !hasSponsoredProject; // On exclut les lands qui ont un projet sponsorisé
+    }
+    return true; // garder les autres éléments (projets, etc.)
+  });
+
   return (
     <div className="min-h-screen flex flex-col bg-green-50">
       <header className="p-4 border-b border-green-300 flex flex-col sm:flex-row justify-between items-center bg-white shadow-sm gap-4">
@@ -145,7 +161,10 @@ export default function Dashboard() {
             Réinitialiser les filtres
           </button>
         </div>
-        <button onClick={() => setShowMessenger(!showMessenger)} className="text-green-700 font-semibold border px-4 py-2 rounded hover:bg-green-100 whitespace-nowrap">
+        <button
+          onClick={() => setShowMessenger(!showMessenger)}
+          className="text-green-700 font-semibold border px-4 py-2 rounded hover:bg-green-100 whitespace-nowrap"
+        >
           {showMessenger ? "Masquer" : "Afficher"} Messagerie
         </button>
       </header>
@@ -156,11 +175,15 @@ export default function Dashboard() {
           <div className="mt-8"><NewsFeed /></div>
         </aside>
 
-        <main className={`p-4 overflow-y-auto transition-all duration-300 ${showMessenger?"w-2/4":"w-3/4"} mx-auto`}>
-          <Timeline items={filteredItems} currentUser={user} isSponsorDahboard={true} />
+        <main className={`p-4 overflow-y-auto transition-all duration-300 ${showMessenger ? "w-2/4" : "w-3/4"} mx-auto`}>
+          <Timeline items={filteredWithoutSponsoredLands} currentUser={user} isSponsorDashboard={true} />
         </main>
 
-        {showMessenger && <aside className="w-1/4 p-4 border-l overflow-y-auto hidden lg:block"><MessagePanel messages={messages} /></aside>}
+        {showMessenger && (
+          <aside className="w-1/4 p-4 border-l overflow-y-auto hidden lg:block">
+            <MessagePanel messages={messages} />
+          </aside>
+        )}
       </div>
     </div>
   );
