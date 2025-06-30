@@ -133,7 +133,11 @@ export default function ProfileCard({ user, setUser }) {
       </div>
 
       <div className="text-center mt-2">
-        <p className="text-lg font-bold">{user.first_name} {user.last_name}</p>
+        <p className="text-lg font-bold">
+          {user.role === 'tech_structure'
+            ? user.first_name
+            : `${user.first_name} ${user.last_name}`}
+        </p>
         <p className="text-sm text-gray-600">{roleLabels[user.role] || user.role}</p>
         <p className="text-sm text-gray-500">{user.email}</p>
       </div>

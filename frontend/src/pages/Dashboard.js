@@ -157,7 +157,7 @@ export default function Dashboard() {
         </aside>
 
         <main className={`p-4 overflow-y-auto transition-all duration-300 ${showMessenger?"w-2/4":"w-3/4"} mx-auto`}>
-          <Timeline items={filteredItems} currentUser={user} />
+          <Timeline items={filteredItems} currentUser={user} isSponsorDahboard={true} />
         </main>
 
         {showMessenger && <aside className="w-1/4 p-4 border-l overflow-y-auto hidden lg:block"><MessagePanel messages={messages} /></aside>}

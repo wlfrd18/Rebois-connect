@@ -9,6 +9,7 @@ export default function Timeline({ items = [], currentUser }) {
           key={`item-${item.id}-${item.status}`}
           item={item}
           currentUser={currentUser}
+          isSponsorDashboard={currentUser?.role === "sponsor" || currentUser?.role === "superuser"} 
         />
       ))}
     </div>

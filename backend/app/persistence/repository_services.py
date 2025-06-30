@@ -16,6 +16,9 @@ class UserRepository(SQLAlchemyRepository):
 
     def get_by_email(self, email):
         return self.model.query.filter_by(email=email).first()
+    
+    def get_by_role(self, role):
+        return self.model.query.filter_by(role=role).all()
 
 class LandRepository(SQLAlchemyRepository):
     def __init__(self):

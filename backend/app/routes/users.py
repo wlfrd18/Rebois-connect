@@ -107,3 +107,13 @@ class UserProjects(Resource):
         """Récupérer tous les projets liés à un utilisateur (volontaire/sponsor/tech)"""
         projects = project_facade.get_projects_by_user_id(user_id)
         return project_schema.dump(projects, many=True)
+
+
+
+@api.route('/tech_structures')
+class TechStructureList(Resource):
+    @jwt_required()
+    def get(self):
+        """Récupérer la liste des structures techniques"""
+        tech_structures = user_facade.get_users_by_role("tech_structure")
+        return tech_structures

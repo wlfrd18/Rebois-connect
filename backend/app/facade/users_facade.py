@@ -55,3 +55,7 @@ class UserFacade:
         user_obj.is_active = True
         db.session.commit()
         return self.user_schema.dump(user_obj)
+
+    def get_users_by_role(self, role_name):
+        users = self.user_repo.get_by_role(role_name)
+        return self.user_list_schema.dump(users)

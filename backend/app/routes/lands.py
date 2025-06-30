@@ -58,6 +58,12 @@ class LandSponsor(Resource):
         land = land_facade.get_a_land_by_id(land_id)
         if not land:
             return {"message": "Terre non trouvée"}, 404
+
+        data = request.get_json() or {}
+
+        tech_structure_id = data.get('tech_structure_id')
+        if not tech_structure_id:
+            return {"message": "La structure technique doit être spécifiée"}, 400
         
         # Vérifier si projet déjà existant pour cette terre
         existing_project = Project.query.filter_by(land_id=land_id).first()
@@ -68,7 +74,8 @@ class LandSponsor(Resource):
         new_project = Project(
             land_id=land.id,
             sponsor_id=user.id,
-            volunteer_id=user.id,  # Pour l'exemple, tu devras récupérer ça dynamiquement
+            volunteer_id=land.owner_id,
+            tech_structure_id=tech_structure_id,
             status='in_progress',
             start_date=datetime.today(),
             photo_url=land.photo_url

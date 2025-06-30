@@ -10,8 +10,8 @@ const Register = () => {
   const navigate = useNavigate();
 
   const validationSchema = Yup.object({
-    firstName: Yup.string().required('Le prénom est requis'),
-    lastName: Yup.string().required('Le nom est requis'),
+    firstName: Yup.string().required('Ce champ est requis'),
+    lastName: Yup.string().required('Ce champ est requis'),
     email: Yup.string().email('Email invalide').required('Email requis'),
     phone: Yup.string().required('Numéro de téléphone requis'),
     password: Yup.string().min(8, 'Minimum 8 caractères').required('Mot de passe requis'),
@@ -19,34 +19,36 @@ const Register = () => {
       .oneOf([Yup.ref('password'), null], 'Les mots de passe ne correspondent pas')
       .required('Confirmez le mot de passe'),
     role: Yup.string()
-      .oneOf(['volunteer', 'sponsor', 'tech_structure', 'superuser'], 'Rôle invalide')
+      .oneOf(['volunteer', 'sponsor', 'tech_structure'], 'Rôle invalide')
       .required('Le rôle est requis'),
   });
 
   const handleSubmit = async (values, { setSubmitting }) => {
     setError(null);
     setServerMessage(null);
-    try {
-      const payload = {
-        first_name: values.firstName,
-        last_name: values.lastName,
-        email: values.email,
-        phone: values.phone,
-        password: values.password,
-        role: values.role,
-      };
 
+    const payload = {
+      first_name: values.firstName,
+      last_name: String(values.lastName),
+      email: values.email,
+      phone: values.phone,
+      password: values.password,
+      role: values.role,
+    };
+    
+    console.log("Payload envoyé :", payload);
+
+    try {
       const response = await axios.post('/auth/register', payload);
 
       if (response.status === 201) {
         setServerMessage(
           "Inscription réussie ! Un lien d'activation vous a été envoyé par email. Veuillez vérifier votre boîte mail."
         );
-      }
-
         setTimeout(() => {
           navigate('/');
         }, 3000);
+      }
     } catch (err) {
       if (err.response?.data?.message) {
         setError(err.response.data.message);
@@ -82,45 +84,9 @@ const Register = () => {
             validationSchema={validationSchema}
             onSubmit={handleSubmit}
           >
-            {({ isSubmitting }) => (
+            {({ isSubmitting, values }) => (
               <Form>
-                {/* ... mêmes champs que précédemment ... */}
-                <div className="mb-4">
-                  <label className="block text-sm font-medium mb-1 text-black">Prénom</label>
-                  <Field name="firstName" className="w-full p-2 border rounded" />
-                  <ErrorMessage name="firstName" component="div" className="text-red-500 text-sm" />
-                </div>
-
-                <div className="mb-4">
-                  <label className="block text-sm font-medium mb-1 text-black">Nom</label>
-                  <Field name="lastName" className="w-full p-2 border rounded" />
-                  <ErrorMessage name="lastName" component="div" className="text-red-500 text-sm" />
-                </div>
-
-                <div className="mb-4">
-                  <label className="block text-sm font-medium mb-1 text-black">Email</label>
-                  <Field type="email" name="email" className="w-full p-2 border rounded" />
-                  <ErrorMessage name="email" component="div" className="text-red-500 text-sm" />
-                </div>
-
-                <div className="mb-4">
-                  <label className="block text-sm font-medium mb-1 text-black">Téléphone</label>
-                  <Field name="phone" className="w-full p-2 border rounded" />
-                  <ErrorMessage name="phone" component="div" className="text-red-500 text-sm" />
-                </div>
-
-                <div className="mb-4">
-                  <label className="block text-sm font-medium mb-1 text-black">Mot de passe</label>
-                  <Field type="password" name="password" className="w-full p-2 border rounded" />
-                  <ErrorMessage name="password" component="div" className="text-red-500 text-sm" />
-                </div>
-
-                <div className="mb-4">
-                  <label className="block text-sm font-medium mb-1 text-black">Confirmer le mot de passe</label>
-                  <Field type="password" name="confirmPassword" className="w-full p-2 border rounded" />
-                  <ErrorMessage name="confirmPassword" component="div" className="text-red-500 text-sm" />
-                </div>
-
+                {/* Rôle en premier */}
                 <div className="mb-4">
                   <label className="block text-sm font-medium mb-1 text-black">Rôle</label>
                   <Field as="select" name="role" className="w-full p-2 border rounded">
@@ -132,13 +98,58 @@ const Register = () => {
                   <ErrorMessage name="role" component="div" className="text-red-500 text-sm mt-1" />
                 </div>
 
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="bg-greenvegetal text-white px-4 py-2 rounded hover:bg-green-700 w-full"
-                >
-                  S’inscrire
-                </button>
+                {/* Les autres champs uniquement si un rôle est sélectionné */}
+                {values.role && (
+                  <>
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium mb-1 text-black">
+                        {values.role === 'tech_structure' ? 'Dénomination sociale' : 'Prénom'}
+                      </label>
+                      <Field name="firstName" className="w-full p-2 border rounded" />
+                      <ErrorMessage name="firstName" component="div" className="text-red-500 text-sm" />
+                    </div>
+
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium mb-1 text-black">
+                        {values.role === 'tech_structure' ? "Numéro d'identification" : 'Nom'}
+                      </label>
+                      <Field name="lastName" className="w-full p-2 border rounded" />
+                      <ErrorMessage name="lastName" component="div" className="text-red-500 text-sm" />
+                    </div>
+
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium mb-1 text-black">Email</label>
+                      <Field type="email" name="email" className="w-full p-2 border rounded" />
+                      <ErrorMessage name="email" component="div" className="text-red-500 text-sm" />
+                    </div>
+
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium mb-1 text-black">Téléphone</label>
+                      <Field name="phone" className="w-full p-2 border rounded" />
+                      <ErrorMessage name="phone" component="div" className="text-red-500 text-sm" />
+                    </div>
+
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium mb-1 text-black">Mot de passe</label>
+                      <Field type="password" name="password" className="w-full p-2 border rounded" />
+                      <ErrorMessage name="password" component="div" className="text-red-500 text-sm" />
+                    </div>
+
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium mb-1 text-black">Confirmer le mot de passe</label>
+                      <Field type="password" name="confirmPassword" className="w-full p-2 border rounded" />
+                      <ErrorMessage name="confirmPassword" component="div" className="text-red-500 text-sm" />
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="bg-greenvegetal text-white px-4 py-2 rounded hover:bg-green-700 w-full"
+                    >
+                      S’inscrire
+                    </button>
+                  </>
+                )}
               </Form>
             )}
           </Formik>
@@ -149,4 +160,3 @@ const Register = () => {
 };
 
 export default Register;
-

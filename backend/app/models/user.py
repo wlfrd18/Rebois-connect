@@ -28,7 +28,7 @@ class User(db.Model):
                  last_name: str,
                  email: str,
                  phone: str,
-                 role: Literal['volunteer', 'sponsor', 'technical_structure', 'superuser'],
+                 role: Literal['volunteer', 'sponsor', 'tech_structure', 'superuser'],
                  password: str,
                  otp_secret: Optional[str] = None,
                  is_active: bool = False,
@@ -63,7 +63,7 @@ class User(db.Model):
                 raise ValueError(f"Numéro de téléphone invalide: {self.phone}")
         except NumberParseException:
             raise ValueError(f"Numéro de téléphone mal formaté: {self.phone}")
-        if self.role not in ['volunteer', 'sponsor', 'technical_structure', 'superuser']:
+        if self.role not in ['volunteer', 'sponsor', 'tech_structure', 'superuser']:
             raise ValueError(f"Rôle invalide: {self.role}")
 
     def validate_password(self, password: str) -> None:

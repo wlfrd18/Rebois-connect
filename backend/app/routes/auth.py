@@ -45,14 +45,14 @@ class Register(Resource):
     def post(self):
         """Register a new user"""
         try:
-            data = api.payload
+            data = request.get_json()
             validated_data = UserRegisterSchema().load(data)
 
             if user_facade.get_user_by_email(validated_data['email']):
                 return {'message': 'User already exists'}, 409
 
             # Créer un nouvel utilisateur sans 2FA
-            new_user = user_facade.create_user(data)
+            new_user = user_facade.create_user(validated_data)
             token = generate_activation_token(new_user['email'])
             activation_link = url_for('auth_activate_user', token=token, _external=True)
             send_activation_email(new_user['email'], activation_link)
