@@ -2,11 +2,15 @@ from typing import Optional, Dict, Any
 from datetime import datetime
 from ..extensions import db
 import uuid
+from sqlalchemy.dialects.postgresql import UUID
+
+def current_time_no_seconds():
+    return datetime.utcnow().replace(second=0, microsecond=0)
 
 class Land(db.Model):
     __tablename__ = 'lands'
 
-    id: uuid.UUID = db.Column(db.Uuid, primary_key=True, default=uuid.uuid4, nullable=False)
+    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, nullable=False)
     owner_id: int = db.Column(db.Uuid, db.ForeignKey('users.id'), nullable=False)
     area: float = db.Column(db.Float, nullable=False)
     vegetation_type: str = db.Column(db.String(100), nullable=False)
@@ -16,7 +20,7 @@ class Land(db.Model):
     weather_data: Optional[Dict[str, Any]] = db.Column(db.JSON, nullable=True)
     status: str = db.Column(db.String(30), default='proposed')
     photo_url = db.Column(db.String(255), nullable=True)
-    created_at: datetime = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at: datetime = db.Column(db.DateTime, default=current_time_no_seconds)
     country = db.Column(db.String(100))
 
 
@@ -40,7 +44,7 @@ class Land(db.Model):
         self.weather_data = weather_data
         self.status = status
         self.photo_url = photo_url
-        self.created_at = datetime.utcnow()
+        self.created_at = datetime.utcnow().replace(second=0, microsecond=0)
         self.country = country
         
         self.validate()

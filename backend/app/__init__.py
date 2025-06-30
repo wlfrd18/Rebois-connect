@@ -13,13 +13,18 @@ from app.routes.users import api as users_ns
 from app.routes.admins import api as admins_ns
 from app.routes.news_routes import api as news_ns
 from app.routes.upload import api as upload_ns
+import logging
+
+logging.basicConfig(level=logging.INFO,  # niveau de logs affichés
+                    format='%(asctime)s - %(levelname)s - %(message)s')
+
 
 def create_app(config_class=Config):
-    app = Flask(__name__)
+    app = Flask(__name__, static_folder='static', static_url_path='/static')
     app.config.from_object(config_class)
     app.debug = True
     app.static_folder = 'static'
-
+    app.static_url_path = '/static'
 
     # CORS avec credentials supporté
     CORS(app, supports_credentials=True, origins=[

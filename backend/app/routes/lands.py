@@ -84,7 +84,6 @@ land_list_schema = LandSchema(many=True)
 @api.route('/')
 class LandList(Resource):
     @api.doc('list_lands')
-    @api.marshal_list_with(land_model)
     def get(self):
         """Get all lands or filter by criteria"""
         name = request.args.get('name')
@@ -96,8 +95,9 @@ class LandList(Resource):
         created_after = request.args.get('created_after')
         created_before = request.args.get('created_before')
         country = request.args.get('country')
+        weather = request.args.get('weather_data')
 
-        if any([name, area, owner_id, vegetation_type, area_min, area_max, created_after, created_before, country]):
+        if any([name, area, owner_id, vegetation_type, area_min, area_max, created_after, created_before, country, weather]):
             return land_facade.filter_lands(name=name,
                                             area=area,
                                             owner_id=owner_id,
@@ -106,7 +106,8 @@ class LandList(Resource):
                                             area_max=area_max, 
                                             created_after=created_after, 
                                             created_before=created_before, 
-                                            country=country)
+                                            country=country,
+                                            weather = weather)
         return land_facade.get_all_lands()
 
     @api.doc('create_land')
@@ -121,6 +122,8 @@ class LandList(Resource):
             data['owner_id'] = get_jwt_identity()
             current_app.logger.debug(f" Owner ID extrait du JWT : {data['owner_id']}")
             validated_data = land_schema.load(data)
+            current_app.logger.debug(f"✅ validated_data après le schema.load : {validated_data}")
+
 
             new_land = land_facade.create_land(validated_data)
             return land_schema.dump(new_land), 201
@@ -140,7 +143,6 @@ class LandList(Resource):
 @api.param('land_id', 'Land ID')
 class Land(Resource):
     @api.doc('get_land')
-    @api.marshal_with(land_model)
     def get(self, land_id):
         """Get a land by its ID"""
         land = land_facade.get_land_by_id(land_id)
@@ -150,7 +152,6 @@ class Land(Resource):
 
     @api.doc('update_land')
     @api.expect(land_model, validate=True)
-    @api.marshal_with(land_model)
     @jwt_required()
     def put(self, land_id):
         """Update an existing land"""

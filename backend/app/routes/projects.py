@@ -59,14 +59,12 @@ project_detailed_model = api.model('ProjectDetailed', {
 @api.route('/')
 class ProjectList(Resource):
     @api.doc('list_projects_detailed')
-    @api.marshal_list_with(project_detailed_model)
     def get(self):
         return project_facade.get_all_projects_detailed()
 
 
     @api.doc('create_project')
     @api.expect(project_model)
-    @api.marshal_with(project_model, code=201)
     @jwt_required()
     def post(self):
         require_superuser()
@@ -96,7 +94,6 @@ class Project(Resource):
 
     @api.doc('update_project')
     @api.expect(project_model)
-    @api.marshal_with(project_model)
     @jwt_required()
     def put(self, project_id):
         require_superuser()
@@ -125,7 +122,6 @@ class Project(Resource):
 @api.route('/only')
 class ProjectList(Resource):
     @api.doc('list_projects')
-    @api.marshal_list_with(project_model)
     @jwt_required()
     def get(self):
         return project_facade.get_all_projects()

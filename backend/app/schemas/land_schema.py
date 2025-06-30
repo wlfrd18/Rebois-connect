@@ -12,3 +12,4 @@ class LandSchema(Schema):
     country = fields.Str(required=False)
     owner_id = fields.Str(required=True)
     status = fields.Str(dump_only=True)
+    created_at = fields.Str(dump_only=True)
