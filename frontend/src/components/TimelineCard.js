@@ -1,120 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import SponsorModal from "./SponsorModal";
+import ReviewCard from "./ReviewCard";
+import StarRating from "./StarRating";
+import ReviewModal from "./ReviewModal";
 
-// Composant d'étoiles avec précision (ex: 0.25)
-function StarRating({ rating, onChange, precision = 0.25, size = 24 }) {
-  const [hoverValue, setHoverValue] = useState(null);
-  const starCount = 5;
-
-  const getFill = (index) => {
-    const value = hoverValue !== null ? hoverValue : rating;
-    const diff = value - index;
-    if (diff >= 1) return 1;
-    if (diff <= 0) return 0;
-    return Math.round(diff / precision) * precision;
-  };
-
-  const handleClick = (index, event) => {
-    const rect = event.currentTarget.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const percent = x / rect.width;
-    const newRating = Math.min(starCount, index + percent);
-    const roundedRating = Math.round(newRating / precision) * precision;
-    onChange(roundedRating);
-  };
-
-  return (
-    <div style={{ display: "flex", gap: 4, cursor: "pointer" }}>
-      {[...Array(starCount)].map((_, i) => {
-        const fill = getFill(i);
-        return (
-          <svg
-            key={i}
-            onClick={(e) => handleClick(i, e)}
-            onMouseMove={(e) => {
-              const rect = e.currentTarget.getBoundingClientRect();
-              const x = e.clientX - rect.left;
-              const percent = x / rect.width;
-              setHoverValue(Math.min(starCount, i + percent));
-            }}
-            onMouseLeave={() => setHoverValue(null)}
-            width={size}
-            height={size}
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="goldenrod"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <defs>
-              <linearGradient id={`grad-${i}`} x1="0" y1="0" x2="1" y2="0">
-                <stop offset={`${fill * 100}%`} stopColor="goldenrod" />
-                <stop offset={`${fill * 100}%`} stopColor="lightgray" />
-              </linearGradient>
-            </defs>
-            <path
-              fill={`url(#grad-${i})`}
-              d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 22
-                 12 18.56 5.82 22 7 14.14l-5-4.87 6.91-1.01L12 2z"
-            />
-          </svg>
-        );
-      })}
-    </div>
-  );
-}
-
-// Modal pour saisir un avis et une note
-function ReviewModal({ isOpen, onCancel, onConfirm, loading, initialReport, initialRating }) {
-  const [report, setReport] = useState(initialReport || "");
-  const [rating, setRating] = useState(initialRating || 5);
-
-  useEffect(() => {
-    if (isOpen) {
-      setReport(initialReport || "");
-      setRating(initialRating || 5);
-    }
-  }, [isOpen, initialReport, initialRating]);
-
-  if (!isOpen) return null;
-
-  return (
-    <div className="modal-backdrop fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-96 max-w-full shadow-lg">
-        <h2 className="text-lg font-semibold mb-4">Noter ce projet</h2>
-        <textarea
-          rows={4}
-          value={report}
-          onChange={(e) => setReport(e.target.value)}
-          placeholder="Écrire un rapport..."
-          className="w-full border rounded p-2 mb-4"
-        />
-        <div className="mb-4">
-          <label className="block mb-1 font-semibold">Note :</label>
-          <StarRating rating={rating} onChange={setRating} />
-        </div>
-        <div className="flex justify-end space-x-2">
-          <button
-            onClick={onCancel}
-            disabled={loading}
-            className="px-4 py-2 rounded border border-gray-300 hover:bg-gray-100"
-          >
-            Annuler
-          </button>
-          <button
-            onClick={() => onConfirm({ report, rating })}
-            disabled={loading}
-            className="px-4 py-2 rounded bg-yellow-500 hover:bg-yellow-600 text-white font-semibold"
-          >
-            {loading ? "En cours..." : "Envoyer"}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
+// Import des icônes react-icons
+import { MdAttachMoney } from "react-icons/md";
+import { FiFileText, FiLoader, FiCheckCircle, FiCompass } from "react-icons/fi";
+import { WiThermometer, WiStrongWind } from "react-icons/wi";
 
 // Composant principal TimelineCard
 export default function TimelineCard({ item, currentUser, isSponsorDashboard }) {
@@ -237,51 +131,51 @@ export default function TimelineCard({ item, currentUser, isSponsorDashboard }) 
 
   return (
     <>
-      <div
-        className={`p-4 rounded-xl shadow transition border flex flex-col sm:flex-row gap-4 
-          ${isProject ? "bg-green-300 cursor-default" : "bg-white cursor-pointer hover:shadow-md border-green-100"}`}
-      >
-        <div className="w-full sm:w-40">
-          <img
-            src={item.photo_url || land.photo_url || "/placeholder-land.jpg"}
-            alt="aperçu"
-            className="w-full h-32 object-cover rounded-lg"
-          />
-          {showSponsorButton && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowModal(true);
-              }}
-              className="mt-4 w-full bg-cyan-600 hover:bg-cyan-700 text-white py-2 px-4 rounded text-sm font-bold"
-            >
-              💸 Sponsoriser
-            </button>
-          )}
-          {(isSponsor || isTech) && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowReviewModal(true);
-              }}
-              className="mt-4 w-full bg-yellow-500 hover:bg-yellow-600 text-white py-2 px-4 rounded font-bold text-sm"
-            >
-              Noter ce projet
-            </button>
-          )}
-        </div>
+      <div className={`p-4 rounded-xl shadow transition border flex flex-col ${isProject ? "bg-green-300 cursor-default" : "bg-white cursor-pointer hover:shadow-md border-green-100"}`}>
+        {/* Première ligne (photo + infos de base) */}
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="w-full sm:w-40">
+            <img
+              src={item.photo_url || land.photo_url || "/placeholder-land.jpg"}
+              alt="aperçu"
+              className="w-full h-32 object-cover rounded-lg"
+            />
+            {showSponsorButton && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowModal(true);
+                }}
+                className="mt-4 w-full bg-cyan-600 hover:bg-cyan-700 text-white py-2 px-4 rounded text-sm font-bold flex items-center justify-center gap-2"
+              >
+                <MdAttachMoney size={18} />
+                Sponsoriser
+              </button>
+            )}
+            {(isSponsor || isTech) && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowReviewModal(true);
+                }}
+                className="mt-4 w-full bg-yellow-500 hover:bg-yellow-600 text-white py-2 px-4 rounded font-bold text-sm flex items-center justify-center gap-2"
+              >
+                <FiFileText size={18} />
+                Noter ce projet
+              </button>
+            )}
+          </div>
 
-        <div className="flex flex-col justify-between flex-grow">
-          <div>
+          <div className="flex-1">
             <h3 className="text-lg font-semibold text-green-900">{`ID du ${isProject ? "projet" : "terrain"} : ${item.id}`}</h3>
-            <p className="text-sm text-green-800 mb-2">
+            <p className="text-sm text-green-800 mb-2 flex items-center gap-2">
               {(() => {
                 const status = item.status || "proposed";
-                const base = "text-xs font-semibold px-2 py-1 rounded-full";
+                const base = "text-xs font-semibold px-2 py-1 rounded-full flex items-center gap-1";
                 const map = {
-                  proposed: ["bg-yellow-100", "text-yellow-800", "📝 Proposé"],
-                  in_progress: ["bg-blue-100", "text-blue-800", "🚧 En cours"],
-                  completed: ["bg-green-200", "text-green-900", "✅ Terminé"],
+                  proposed: ["bg-yellow-100", "text-yellow-800", <><FiFileText size={14} /> Proposé</>],
+                  in_progress: ["bg-blue-100", "text-blue-800", <><FiLoader size={14} className="animate-spin" /> En cours</>],
+                  completed: ["bg-green-200", "text-green-900", <><FiCheckCircle size={14} /> Terminé</>],
                 };
                 const [bg, textColor, label] = map[status] || ["bg-gray-200", "text-gray-800", status];
                 return <span className={`${base} ${bg} ${textColor}`}>{label}</span>;
@@ -326,23 +220,6 @@ export default function TimelineCard({ item, currentUser, isSponsorDashboard }) 
                       <strong>Structure technique :</strong> {item.tech_structure.first_name}
                     </p>
                   )}
-                  {averageRating && (
-                    <p className="text-yellow-600 font-semibold mt-4 mb-2">
-                      ⭐ Note moyenne : {averageRating} / 5 ({ratings.length} avis)
-                    </p>
-                  )}
-                  {item.sponsor_report && (
-                    <p className="italic text-green-900 mt-2">
-                      <strong>Avis sponsor :</strong> {item.sponsor_report} <br />
-                      <strong>Note :</strong> {item.sponsor_rating} / 5
-                    </p>
-                  )}
-                  {item.tech_report && (
-                    <p className="italic text-green-900 mt-2">
-                      <strong>Avis structure technique :</strong> {item.tech_report} <br />
-                      <strong>Note :</strong> {item.tech_rating} / 5
-                    </p>
-                  )}
                 </>
               )}
             </div>
@@ -359,20 +236,23 @@ export default function TimelineCard({ item, currentUser, isSponsorDashboard }) 
                 }
                 if (!currentWeather) return null;
                 return (
-                  <div className="mt-3 text-sm text-blue-700 bg-blue-50 p-2 rounded">
+                  <div className="mt-3 text-sm text-blue-700 bg-blue-50 p-2 rounded space-y-1">
                     {currentWeather.temperature != null && (
-                      <p>
-                        🌡 Température : <strong>{currentWeather.temperature}°C</strong>
+                      <p className="flex items-center gap-2">
+                        <WiThermometer size={18} />
+                        Température : <strong>{currentWeather.temperature}°C</strong>
                       </p>
                     )}
                     {currentWeather.windspeed != null && (
-                      <p>
-                        💨 Vent : <strong>{currentWeather.windspeed} km/h</strong>
+                      <p className="flex items-center gap-2">
+                        <WiStrongWind size={18} />
+                        Vent : <strong>{currentWeather.windspeed} km/h</strong>
                       </p>
                     )}
                     {currentWeather.winddirection != null && (
-                      <p>
-                        🧭 Direction : <strong>{currentWeather.winddirection}°</strong>
+                      <p className="flex items-center gap-2">
+                        <FiCompass size={18} />
+                        Direction : <strong>{currentWeather.winddirection}°</strong>
                       </p>
                     )}
                   </div>
@@ -380,6 +260,39 @@ export default function TimelineCard({ item, currentUser, isSponsorDashboard }) 
               })()}
           </div>
         </div>
+
+        {/* Deuxième ligne (avis qui s'étend sur toute la largeur) */}
+        {isProject && (
+          <div className="mt-4 space-y-3 w-full">
+            {averageRating && (
+              <div className="flex items-center space-x-1 text-sm">
+                <StarRating 
+                  rating={parseFloat(averageRating)} 
+                  size={14}
+                  precision={0.1}
+                  onChange={null}
+                />
+                <span className="text-gray-500 ml-1">({ratings.length})</span>
+              </div>
+            )}
+            
+            {item.sponsor_report && item.sponsor && (
+              <ReviewCard
+                user={item.sponsor}
+                rating={item.sponsor_rating}
+                report={item.sponsor_report}
+              />
+            )}
+            
+            {item.tech_report && item.tech_structure && (
+              <ReviewCard
+                user={item.tech_structure}
+                rating={item.tech_rating}
+                report={item.tech_report}
+              />
+            )}
+          </div>
+        )}
       </div>
 
       {/* Modal de sponsoring */}

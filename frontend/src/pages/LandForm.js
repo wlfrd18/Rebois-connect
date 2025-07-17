@@ -104,7 +104,7 @@ export default function LandForm({ onSuccess }) {
 
     try {
       const token = localStorage.getItem("access_token");
-      const res = await fetch("/upload/", {
+      const res = await fetch("/upload", {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
         body: formData,

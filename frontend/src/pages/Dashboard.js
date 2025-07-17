@@ -10,7 +10,6 @@ export default function Dashboard() {
   const [user, setUser] = useState(null);
   const [allItems, setAllItems] = useState([]);
   const [filteredItems, setFilteredItems] = useState([]);
-  const [messages, setMessages] = useState([]);
   const [showMessenger, setShowMessenger] = useState(true);
   const [filters, setFilters] = useState({
     country: "", area: "", vegetation_type: "", created_at: "",
@@ -101,8 +100,6 @@ export default function Dashboard() {
       setAllItems(enriched);
       setFilteredItems(enriched);
 
-      const msgsRes = await fetch("/messages", { headers });
-      if (msgsRes.ok) setMessages(await msgsRes.json());
     })();
   }, []);
 
@@ -181,7 +178,7 @@ export default function Dashboard() {
 
         {showMessenger && (
           <aside className="w-1/4 p-4 border-l overflow-y-auto hidden lg:block">
-            <MessagePanel messages={messages} />
+            <MessagePanel currentUser={user} />
           </aside>
         )}
       </div>

@@ -1,0 +1,68 @@
+.messenger-container {
+  display: flex;
+  height: 100vh;
+  background-color: #ffffff;
+}
+
+.sidebar {
+  width: 25%;
+  background-color: #e6f4ea; /* Vert pâle */
+  padding: 1rem;
+  border-right: 1px solid #ccc;
+}
+
+.room-item {
+  padding: 10px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+.room-item:hover {
+  background-color: #c7efde;
+}
+
+.message-window {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: #f8fbff;
+  padding: 1rem;
+}
+
+.messages {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.bubble {
+  padding: 10px 15px;
+  border-radius: 20px;
+  margin: 5px 0;
+  max-width: 60%;
+  word-break: break-word;
+}
+
+.bubble.me {
+  background-color: #3ac27e; /* Vert principal */
+  color: white;
+  margin-left: auto;
+}
+
+.bubble.other {
+  background-color: #dceeff; /* Bleu clair */
+  color: black;
+  margin-right: auto;
+}
+
+.message-input {
+  display: flex;
+  border-top: 1px solid #ddd;
+  padding: 10px;
+}
+
+.message-input input {
+  flex: 1;
+  border: none;
+  padding: 10px;
+  border-radius: 25px;
+  background-color: #f0f0f0;
+}

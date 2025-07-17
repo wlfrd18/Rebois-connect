@@ -1,7 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ItemModal from './ItemModal';
-import PhotoModal from './PhotoModal'; // 📸 Import de la modal photo
+import PhotoModal from './PhotoModal';
+
+import {
+  FaEdit,
+  FaGlobeEurope,
+  FaBoxOpen,
+  FaFolder,
+  FaCheckCircle,
+} from 'react-icons/fa';
+import { MdLogout } from 'react-icons/md';
+import { GiReceiveMoney } from 'react-icons/gi';
+import { BsInboxFill } from 'react-icons/bs';
 
 export default function ProfileCard({ user, setUser }) {
   const navigate = useNavigate();
@@ -9,7 +20,7 @@ export default function ProfileCard({ user, setUser }) {
   const [projects, setProjects] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
   const [previewPhoto, setPreviewPhoto] = useState('/default-avatar.png');
-  const [photoModalOpen, setPhotoModalOpen] = useState(false); // 🔍 état pour la modal
+  const [photoModalOpen, setPhotoModalOpen] = useState(false);
 
   useEffect(() => {
     if (user?.photo_url) {
@@ -20,20 +31,48 @@ export default function ProfileCard({ user, setUser }) {
   const canPostLand = ['superuser', 'volunteer'].includes(user.role);
 
   const roleLabels = {
-    superuser: "Administrateur",
-    sponsor: "Sponsor",
-    volunteer: "Volontaire",
-    tech_structure: "Structure technique"
+    superuser: 'Administrateur',
+    sponsor: 'Sponsor',
+    volunteer: 'Volontaire',
+    tech_structure: 'Structure technique',
   };
 
   const getStatusBadge = (status) => {
-    const base = "text-xs font-semibold px-2 py-1 rounded-full";
+    const base = 'text-xs font-semibold px-2 py-1 rounded-full flex items-center gap-1';
     const badgeMap = {
-      proposed: { text: "📥 Proposé", bg: "bg-yellow-100", textColor: "text-yellow-800" },
-      in_progress: { text: "🔧 En cours", bg: "bg-blue-100", textColor: "text-blue-800" },
-      completed: { text: "✅ Terminé", bg: "bg-green-100", textColor: "text-green-800" }
+      proposed: {
+        text: (
+          <>
+            <BsInboxFill /> Proposé
+          </>
+        ),
+        bg: 'bg-yellow-100',
+        textColor: 'text-yellow-800',
+      },
+      in_progress: {
+        text: (
+          <>
+            <GiReceiveMoney /> En cours
+          </>
+        ),
+        bg: 'bg-blue-100',
+        textColor: 'text-blue-800',
+      },
+      completed: {
+        text: (
+          <>
+            <FaCheckCircle /> Terminé
+          </>
+        ),
+        bg: 'bg-green-100',
+        textColor: 'text-green-800',
+      },
     };
-    const badge = badgeMap[status] || { text: status, bg: "bg-gray-200", textColor: "text-gray-800" };
+    const badge = badgeMap[status] || {
+      text: status,
+      bg: 'bg-gray-200',
+      textColor: 'text-gray-800',
+    };
     return <span className={`${base} ${badge.bg} ${badge.textColor}`}>{badge.text}</span>;
   };
 
@@ -45,13 +84,13 @@ export default function ProfileCard({ user, setUser }) {
       try {
         const [landsRes, projectsRes] = await Promise.all([
           fetch(`/users/${user.id}/lands`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`/users/${user.id}/projects`, { headers: { Authorization: `Bearer ${token}` } })
+          fetch(`/users/${user.id}/projects`, { headers: { Authorization: `Bearer ${token}` } }),
         ]);
 
         if (landsRes.ok) setLands(await landsRes.json());
         if (projectsRes.ok) setProjects(await projectsRes.json());
       } catch (error) {
-        console.error("Erreur lors du chargement des terres/projets :", error);
+        console.error('Erreur lors du chargement des terres/projets :', error);
       }
     };
 
@@ -70,7 +109,7 @@ export default function ProfileCard({ user, setUser }) {
       const uploadRes = await fetch('/upload/', {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
-        body: formData
+        body: formData,
       });
 
       if (!uploadRes.ok) {
@@ -85,16 +124,16 @@ export default function ProfileCard({ user, setUser }) {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ photo_url })
+        body: JSON.stringify({ photo_url }),
       });
 
       if (!updateRes.ok) console.error('Erreur de mise à jour utilisateur');
 
       const refreshedUserRes = await fetch(`/auth/me`, {
         method: 'GET',
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (refreshedUserRes.ok) {
@@ -121,7 +160,7 @@ export default function ProfileCard({ user, setUser }) {
           className="absolute bottom-0 right-0 bg-green-600 text-white rounded-full p-1 hover:bg-green-700 cursor-pointer"
           title="Changer la photo"
         >
-          ✎
+          <FaEdit size={14} />
         </label>
         <input
           id="photo-upload"
@@ -153,19 +192,21 @@ export default function ProfileCard({ user, setUser }) {
 
       <button
         onClick={() => {
-          localStorage.removeItem("access_token");
+          localStorage.removeItem('access_token');
           navigate('/');
         }}
-        className="mt-2 w-full bg-red-500 text-white py-2 rounded hover:bg-red-600"
+        className="mt-2 w-full bg-red-500 text-white py-2 rounded hover:bg-red-600 flex items-center justify-center gap-2"
       >
-        Déconnexion
+        <MdLogout /> Déconnexion
       </button>
 
       {/* Scrollable Terres et Projets */}
       <div className="mt-6 space-y-4">
         {/* Terres */}
         <div>
-          <h4 className="text-md font-semibold mb-2 text-green-800">🌍 Terres postées</h4>
+          <h4 className="text-md font-semibold mb-2 text-green-800 flex items-center gap-2">
+            <FaGlobeEurope /> Terres postées
+          </h4>
           <div className="max-h-48 overflow-y-auto pr-1 space-y-2">
             {lands.length > 0 ? (
               lands.map((land) => (
@@ -175,7 +216,7 @@ export default function ProfileCard({ user, setUser }) {
                   className="flex items-center gap-3 bg-green-50 border border-green-200 rounded-lg p-2 hover:shadow cursor-pointer transition"
                 >
                   <img
-                    src={land.photo_url || "/placeholder-land.jpg"}
+                    src={land.photo_url || '/placeholder-land.jpg'}
                     alt={land.title || `Terre #${land.id}`}
                     className="w-10 h-10 object-cover rounded-md"
                   />
@@ -193,7 +234,9 @@ export default function ProfileCard({ user, setUser }) {
 
         {/* Projets */}
         <div>
-          <h4 className="text-md font-semibold mb-2 text-blue-800">📦 Projets associés</h4>
+          <h4 className="text-md font-semibold mb-2 text-blue-800 flex items-center gap-2">
+            <FaBoxOpen /> Projets associés
+          </h4>
           <div className="max-h-48 overflow-y-auto pr-1 space-y-2">
             {projects.length > 0 ? (
               projects.map((project) => (
@@ -202,11 +245,13 @@ export default function ProfileCard({ user, setUser }) {
                   onClick={() => setSelectedItem(project)}
                   className="flex items-center gap-3 bg-blue-50 border border-blue-200 rounded-lg p-2 hover:shadow cursor-pointer transition"
                 >
-                  <div className="w-10 h-10 bg-blue-100 flex items-center justify-center rounded-md text-blue-600 text-lg font-bold">
-                    📁
+                  <div className="w-10 h-10 bg-blue-100 flex items-center justify-center rounded-md text-blue-600 text-lg">
+                    <FaFolder />
                   </div>
                   <div className="flex-1">
-                    <p className="font-medium text-sm">{project.project_name || `Projet #${project.id}`}</p>
+                    <p className="font-medium text-sm">
+                      {project.project_name || `Projet #${project.id}`}
+                    </p>
                     {getStatusBadge(project.status)}
                   </div>
                 </div>
@@ -220,17 +265,11 @@ export default function ProfileCard({ user, setUser }) {
 
       {/* Modal projet */}
       {selectedItem && (
-        <ItemModal
-          item={selectedItem}
-          currentUser={user}
-          onClose={() => setSelectedItem(null)}
-        />
+        <ItemModal item={selectedItem} currentUser={user} onClose={() => setSelectedItem(null)} />
       )}
 
       {/* Modal photo */}
-      {photoModalOpen && (
-        <PhotoModal src={previewPhoto} onClose={() => setPhotoModalOpen(false)} />
-      )}
+      {photoModalOpen && <PhotoModal src={previewPhoto} onClose={() => setPhotoModalOpen(false)} />}
     </div>
   );
 }
