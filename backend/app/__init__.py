@@ -82,6 +82,9 @@ def create_app(config_class=Config):
     api.add_namespace(upload_ns, path='/api/v1/upload')
     api.add_namespace(messages_ns, path='/api/v1/messages')
 
+    @app.route('/')
+    def index():
+        return {"message": "Bienvenue sur Rebois Connect API"}, 200
 
     return app
 
