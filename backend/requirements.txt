@@ -15,5 +15,6 @@ flask_mail
 flask_cors
 requests
 werkzeug
-flask_socketio
 gunicorn
+flask_socketio
+
