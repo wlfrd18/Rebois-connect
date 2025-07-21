@@ -56,6 +56,6 @@ class UserFacade:
         db.session.commit()
         return self.user_schema.dump(user_obj)
 
-    def get_users_by_role(self, role_name):
-        users = self.user_repo.get_by_role(role_name)
+    def get_users_by_role(self, role):
+        users = self.user_repo.get_by_role(role)
         return self.user_list_schema.dump(users)

@@ -6,6 +6,7 @@ from app.facade import project_facade, user_facade
 from app.schemas.project_schema import ProjectSchema
 from .auth import require_superuser
 from app.extensions import db
+from uuid import UUID
 
 project_schema = ProjectSchema()
 
@@ -106,12 +107,12 @@ class Project(Resource):
 
         # Récupérer l'utilisateur connecté
         current_user_id = get_jwt_identity()
-        current_user = user_facade.get_user_by_id(current_user_id)
+        current_user = user_facade.get_a_user_by_id(current_user_id)
         if not current_user:
             api.abort(401, "Utilisateur non authentifié")
 
         # Récupérer le projet
-        project = project_facade.get_project_by_id(project_id)
+        project = project_facade.get_a_project_by_id(project_id)
         if not project:
             api.abort(404, "Project not found")
 
@@ -123,7 +124,7 @@ class Project(Resource):
             project.sponsor_id,
             project.tech_structure_id
         ]
-        if current_user.role != "superuser" and current_user_id not in allowed_user_ids:
+        if current_user.role != "superuser" and UUID(current_user_id) not in allowed_user_ids:
             api.abort(403, "Accès refusé : vous n'êtes pas autorisé à modifier ce projet")
 
         # Mise à jour partielle (typiquement le champ 'report')

@@ -2,7 +2,7 @@ from flask import Flask, request
 from flask_restx import Api
 from flask_cors import CORS
 
-from app.extensions import db, jwt, bcrypt, migrate, mail
+from app.extensions import db, jwt, bcrypt, migrate, mail, socketio
 from app.config import Config
 
 # Import des namespaces
@@ -13,6 +13,8 @@ from app.routes.users import api as users_ns
 from app.routes.admins import api as admins_ns
 from app.routes.news_routes import api as news_ns
 from app.routes.upload import api as upload_ns
+from app.routes.messages import api as messages_ns
+
 import logging
 
 logging.basicConfig(level=logging.INFO,  # niveau de logs affichés
@@ -56,6 +58,10 @@ def create_app(config_class=Config):
     from app.models.twofacode import TwoFaCode
     migrate.init_app(app, db)
     mail.init_app(app)
+    socketio.init_app(app, cors_allowed_origins="*")
+
+    from app.sockets.message_socket import register_socketio_events
+    register_socketio_events(socketio)
 
     # Swagger API instance
     api = Api(
@@ -74,8 +80,7 @@ def create_app(config_class=Config):
     api.add_namespace(admins_ns, path='/api/v1/admins')
     api.add_namespace(news_ns, path='/api/v1/news')
     api.add_namespace(upload_ns, path='/api/v1/upload')
-
-
+    api.add_namespace(messages_ns, path='/api/v1/messages')
 
 
     return app

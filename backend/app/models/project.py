@@ -18,9 +18,15 @@ class Project(db.Model):
     start_date = db.Column(db.Date, nullable=True)
     end_date = db.Column(db.Date, nullable=True)
     report = db.Column(db.Text, nullable=True)
-    rating = db.column(db.String )
     status = db.Column(db.String(30), default='proposed', nullable=False)
     photo_url = db.Column(db.String(255), nullable=True)
+
+    sponsor_report = db.Column(db.Text, nullable=True)
+    sponsor_rating = db.Column(db.Integer, nullable=True)
+
+    tech_report = db.Column(db.Text, nullable=True)
+    tech_rating = db.Column(db.Integer, nullable=True)
+
 
     # Relationships
     land = db.relationship('Land', backref='projects')
