@@ -16,3 +16,4 @@ flask_cors
 requests
 werkzeug
 gunicorn
+flask_socketio
