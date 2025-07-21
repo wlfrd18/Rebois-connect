@@ -33,7 +33,8 @@ def create_app(config_class=Config):
         "http://localhost:3000",
         "http://127.0.0.1:3000",
         "https://localhost:3000",
-        "https://127.0.0.1:3000"
+        "https://127.0.0.1:3000",
+        "https://rebois-connect.vercel.app",
     ])
 
     @app.after_request
@@ -43,7 +44,8 @@ def create_app(config_class=Config):
             "http://localhost:3000",
             "http://127.0.0.1:3000",
             "https://localhost:3000",
-            "https://127.0.0.1:3000"
+            "https://127.0.0.1:3000",
+            "https://rebois-connect.vercel.app",
         ]:
             response.headers["Access-Control-Allow-Origin"] = origin
         response.headers["Access-Control-Allow-Credentials"] = "true"
