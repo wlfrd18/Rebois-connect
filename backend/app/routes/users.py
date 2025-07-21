@@ -9,6 +9,8 @@ from app.facade import user_facade, project_facade
 from app.facade import land_facade
 from .auth import require_superuser
 import uuid
+from sqlalchemy import or_
+from app.models.user import User  # important : assure-toi d'avoir cette ligne
 
 api = Namespace('users', description='Opérations sur les utilisateurs')
 
@@ -122,3 +124,37 @@ class TechStructureList(Resource):
         """Récupérer la liste des structures techniques"""
         tech_structures = user_facade.get_users_by_role("tech_structure")
         return tech_structures
+
+
+@api.route('/search')
+class UserSearch(Resource):
+    @jwt_required()
+    def get(self):
+        query = request.args.get("query", "").strip().lower()
+
+        if not query or len(query) < 2:
+            return [], 200  # Ne rien retourner si trop court (meilleure UX)
+
+        current_user_id = str(get_jwt_identity())
+
+        # Recherche dans les noms / prénoms, hors utilisateur courant
+        users = User.query.filter(
+            or_(
+                User.first_name.ilike(f"%{query}%"),
+                User.last_name.ilike(f"%{query}%")
+            )
+        ).filter(User.id != current_user_id).all()
+
+        # On adapte le user_name selon le rôle comme tu l’as demandé
+        results = []
+        for user in users:
+            user_name = user.first_name if user.role == "tech_structure" else f"{user.first_name} {user.last_name}"
+            results.append({
+                "id": str(user.id),
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "role": user.role,
+                "user_name": user_name
+            })
+
+        return results, 200

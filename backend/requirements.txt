@@ -15,3 +15,7 @@ flask_mail
 flask_cors
 requests
 werkzeug
+flask-socketio
+eventlet
+flask-socketio[asyncio]
+python-socketio

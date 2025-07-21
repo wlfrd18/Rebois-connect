@@ -14,6 +14,10 @@ class ProjectSchema(Schema):
     report = fields.Str(allow_none=True)
     status = fields.Str(load_default='proposed')
     photo_url = fields.Str()
+    sponsor_report = fields.Str(allow_none=True)
+    sponsor_rating = fields.Int(allow_none=True)
+    tech_report = fields.Str(allow_none=True)
+    tech_rating = fields.Int(allow_none=True)
 
 class ProjectFullSchema(Schema):
     id = fields.Str(dump_only=True)
@@ -24,6 +28,10 @@ class ProjectFullSchema(Schema):
     start_date = fields.Date(allow_none=True)
     end_date = fields.Date(allow_none=True)
     report = fields.Str(allow_none=True)
+    sponsor_report = fields.Str(allow_none=True)
+    sponsor_rating = fields.Int(allow_none=True)
+    tech_report = fields.Str(allow_none=True)
+    tech_rating = fields.Int(allow_none=True)
     status = fields.Str(load_default='proposed')
     photo_url = fields.Str()
     area = fields.Float(required=True)
