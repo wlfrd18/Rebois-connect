@@ -17,4 +17,5 @@ requests
 werkzeug
 gunicorn
 flask_socketio
+eventlet
 

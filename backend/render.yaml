@@ -2,14 +2,20 @@ services:
   - type: web
     name: flask-backend
     env: python
-    buildCommand: ""
-    startCommand: gunicorn run:app --bind 0.0.0.0:$PORT
+    startCommand: gunicorn -k eventlet -w 1 run:app --bind 0.0.0.0:$PORT
     envVars:
       - key: FLASK_ENV
         value: production
+      - key: DEBUG
+        value: false
+      - key: SECRET_KEY
+        value: mosecretpourlavie2026
+      - key: JWT_SECRET_KEY
+        value: monsecretpourlavie2026
       - key: BREVO_SMTP_KEY
         value: A95rsW0x3w7z8gGq
-      - key: DATABASE_URL
+
+      - key: SQLALCHEMY_DATABASE_URI
         fromDatabase:
           name: rebois-db
           property: connectionString
