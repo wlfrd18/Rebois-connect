@@ -16,5 +16,5 @@ flask_cors
 requests
 werkzeug
 gunicorn
-flask_socketio
 eventlet>=0.40.3
+flask_socketio
