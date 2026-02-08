@@ -17,5 +17,4 @@ requests
 werkzeug
 gunicorn
 flask_socketio
-eventlet
-
+eventlet>=0.40.3
