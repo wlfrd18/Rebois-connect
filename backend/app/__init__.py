@@ -45,6 +45,7 @@ def create_app(config_class=Config):
     bcrypt.init_app(app)
     jwt.init_app(app)
     db.init_app(app)
+
     with app.app_context():
         try:
             db.engine.connect()
