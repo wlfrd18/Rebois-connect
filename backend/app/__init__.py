@@ -24,39 +24,34 @@ logging.basicConfig(level=logging.INFO,  # niveau de logs affichés
 def create_app(config_class=Config):
     app = Flask(__name__, static_folder='static', static_url_path='/static')
     app.config.from_object(config_class)
-    app.debug = True
+    app.debug = app.config.get("DEBUG", False)
     app.static_folder = 'static'
     app.static_url_path = '/static'
 
     # CORS avec credentials supporté
-    CORS(app, supports_credentials=True, origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "https://localhost:3000",
-        "https://127.0.0.1:3000",
-        "https://rebois-connect.vercel.app",
-    ])
+    CORS(
+        app,
+        supports_credentials=True,
+        resources={r"/api/*": {
+            "origins": [
+                "http://localhost:3000",
+                "https://rebois-connect.vercel.app"
+            ]
+        }}
+    )
 
-    @app.after_request
-    def add_cors_headers(response):
-        origin = request.headers.get("Origin")
-        if origin in [
-            "http://localhost:3000",
-            "http://127.0.0.1:3000",
-            "https://localhost:3000",
-            "https://127.0.0.1:3000",
-            "https://rebois-connect.vercel.app",
-        ]:
-            response.headers["Access-Control-Allow-Origin"] = origin
-        response.headers["Access-Control-Allow-Credentials"] = "true"
-        response.headers["Access-Control-Allow-Headers"] = "Content-Type,Authorization"
-        response.headers["Access-Control-Allow-Methods"] = "GET,POST,PUT,DELETE,OPTIONS"
-        return response
 
     # Initialiser les extensions
     bcrypt.init_app(app)
     jwt.init_app(app)
     db.init_app(app)
+    with app.app_context():
+        try:
+            db.engine.connect()
+            print("✅ Connexion PostgreSQL OK")
+        except Exception as e:
+            print("❌ Erreur PostgreSQL :", e)s
+
     from app.models.twofacode import TwoFaCode
     migrate.init_app(app, db)
     mail.init_app(app)
