@@ -51,7 +51,7 @@ def create_app(config_class=Config):
             db.engine.connect()
             print("✅ Connexion PostgreSQL OK")
         except Exception as e:
-            print("❌ Erreur PostgreSQL :", e)s
+            print("❌ Erreur PostgreSQL :", e)
 
     from app.models.twofacode import TwoFaCode
     migrate.init_app(app, db)
