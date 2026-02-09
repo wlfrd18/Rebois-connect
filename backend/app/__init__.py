@@ -17,31 +17,22 @@ from app.routes.messages import api as messages_ns
 
 import logging
 
-logging.basicConfig(level=logging.INFO,  # niveau de logs affichés
+logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
-
 
 def create_app(config_class=Config):
     app = Flask(__name__, static_folder='static', static_url_path='/static')
     app.config.from_object(config_class)
     app.debug = app.config.get("DEBUG", False)
-    app.static_folder = 'static'
-    app.static_url_path = '/static'
 
-    # CORS avec credentials supporté
-    CORS(
-        app,
-        supports_credentials=True,
-        resources={r"/api/*": {
-            "origins": [
-                "http://localhost:3000",
-                "https://rebois-connect.vercel.app"
-            ]
-        }}
+    # CORS
+    CORS(app,
+         supports_credentials=True,
+         resources={r"/api/*": {"origins": ["http://localhost:3000",
+                                           "https://rebois-connect.vercel.app"]}}
     )
 
-
-    # Initialiser les extensions
+    # Extensions
     bcrypt.init_app(app)
     jwt.init_app(app)
     db.init_app(app)
@@ -61,14 +52,12 @@ def create_app(config_class=Config):
     from app.sockets.message_socket import register_socketio_events
     register_socketio_events(socketio)
 
-    # Swagger API instance
-    api = Api(
-        app,
-        version="1.0",
-        title="Rebois Connect API",
-        description="API pour la gestion de reboisement participatif",
-        doc="/api/v1/docs"
-    )
+    # Swagger
+    api = Api(app,
+              version="1.0",
+              title="Rebois Connect API",
+              description="API pour la gestion de reboisement participatif",
+              doc="/api/v1/docs")
 
     # Enregistrer les namespaces
     api.add_namespace(auth_ns, path='/api/v1/auth')
@@ -80,9 +69,9 @@ def create_app(config_class=Config):
     api.add_namespace(upload_ns, path='/api/v1/upload')
     api.add_namespace(messages_ns, path='/api/v1/messages')
 
+    # Route racine
     @app.route('/')
     def index():
         return {"message": "Bienvenue sur Rebois Connect API"}, 200
 
     return app
-
