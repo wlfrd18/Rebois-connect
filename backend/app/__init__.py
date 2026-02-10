@@ -23,6 +23,7 @@ logging.basicConfig(level=logging.INFO,
 def create_app(config_class=Config):
     app = Flask(__name__, static_folder='static', static_url_path='/static')
     app.config.from_object(config_class)
+    logging.info(f"🔍 DATABASE_URL = {app.config.get('SQLALCHEMY_DATABASE_URI')}")
     app.debug = app.config.get("DEBUG", False)
 
     # CORS
@@ -37,12 +38,15 @@ def create_app(config_class=Config):
     jwt.init_app(app)
     db.init_app(app)
 
+    import logging
+
     with app.app_context():
         try:
             db.engine.connect()
-            print("✅ Connexion PostgreSQL OK")
+            logging.info("✅ Connexion PostgreSQL OK")
         except Exception as e:
-            print("❌ Erreur PostgreSQL :", e)
+            logging.error(f"❌ Erreur PostgreSQL : {e}")
+
 
     from app.models.twofacode import TwoFaCode
     migrate.init_app(app, db)
