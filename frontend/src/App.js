@@ -9,6 +9,7 @@ import Dashboard from "./pages/Dashboard";
 import PrivateRoute from "./components/PrivateRoute";
 import LandForm from './pages/LandForm';
 import Modal from 'react-modal';
+import TestBackend from './components/TestBackend';
 Modal.setAppElement('#root');
 
 const App = () => {
@@ -22,6 +23,7 @@ const App = () => {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/lands/new" element={<LandForm />} />
         </Route>
+        <Route path="/test-backend" element={<TestBackend />} />
       </Routes>
   );
 };
