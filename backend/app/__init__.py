@@ -74,4 +74,12 @@ def create_app(config_class=Config):
     def index():
         return {"message": "Bienvenue sur Rebois Connect API"}, 200
 
+    @app.route("/health/db")
+    def health_db():
+        try:
+            db.session.execute("SELECT 1")
+            return {"database": "connected"}, 200
+        except Exception as e:
+            return {"database": "error", "detail": str(e)}, 500
+
     return app
