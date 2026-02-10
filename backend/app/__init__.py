@@ -37,13 +37,6 @@ def create_app(config_class=Config):
     jwt.init_app(app)
     db.init_app(app)
 
-    with app.app_context():
-        try:
-            db.engine.execute("SELECT 1")
-            print("✅ DATABASE CONNECTÉE SUR RENDER")
-        except Exception as e:
-            print("❌ ERREUR DB :", e)
-
     from app.models.twofacode import TwoFaCode
     migrate.init_app(app, db)
     mail.init_app(app)
@@ -58,17 +51,6 @@ def create_app(config_class=Config):
               title="Rebois Connect API",
               description="API pour la gestion de reboisement participatif",
               doc="/api/v1/docs")
-
-    # Enregistrer les namespaces
-    api.add_namespace(auth_ns, path='/api/v1/auth')
-    api.add_namespace(lands_ns, path='/api/v1/lands')
-    api.add_namespace(projects_ns, path='/api/v1/projects')
-    api.add_namespace(users_ns, path='/api/v1/users')
-    api.add_namespace(admins_ns, path='/api/v1/admins')
-    api.add_namespace(news_ns, path='/api/v1/news')
-    api.add_namespace(upload_ns, path='/api/v1/upload')
-    api.add_namespace(messages_ns, path='/api/v1/messages')
-
     # Route racine
     @app.route('/')
     def index():
@@ -81,5 +63,16 @@ def create_app(config_class=Config):
             return {"database": "connected"}, 200
         except Exception as e:
             return {"database": "error", "detail": str(e)}, 500
+
+    # Enregistrer les namespaces
+    api.add_namespace(auth_ns, path='/api/v1/auth')
+    api.add_namespace(lands_ns, path='/api/v1/lands')
+    api.add_namespace(projects_ns, path='/api/v1/projects')
+    api.add_namespace(users_ns, path='/api/v1/users')
+    api.add_namespace(admins_ns, path='/api/v1/admins')
+    api.add_namespace(news_ns, path='/api/v1/news')
+    api.add_namespace(upload_ns, path='/api/v1/upload')
+    api.add_namespace(messages_ns, path='/api/v1/messages')
+
 
     return app
